@@ -14,19 +14,20 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.martin.reciper.R;
 
-public class ConverterFragment extends Fragment {
-
+public class ConverterFragment extends Fragment
+{
     private ConverterViewModel converterViewModel;
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        converterViewModel =
-                ViewModelProviders.of(this).get(ConverterViewModel.class);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        converterViewModel = ViewModelProviders.of(this).get(ConverterViewModel.class);
         View root = inflater.inflate(R.layout.fragment_converter, container, false);
         final TextView textView = root.findViewById(R.id.text_dashboard);
-        converterViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        converterViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>()
+        {
             @Override
-            public void onChanged(@Nullable String s) {
+            public void onChanged(@Nullable String s)
+            {
                 textView.setText(s);
             }
         });

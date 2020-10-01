@@ -4,11 +4,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class ConverterViewModel extends ViewModel {
-
+public class ConverterViewModel extends ViewModel
+{
     private MutableLiveData<String> mText;
 
-    public ConverterViewModel() {
+    public ConverterViewModel()
+    {
         mText = new MutableLiveData<>();
         mText.setValue("converter fragment");
     }
