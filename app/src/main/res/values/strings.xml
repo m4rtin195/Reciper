@@ -3,4 +3,8 @@
     <string name="title_home">Home</string>
     <string name="title_converter">Converter</string>
     <string name="title_settings">Settings</string>
+    <string name="skuska">skuska</string>
+    <string name="text_search">YouTube Search:</string>
+    <string name="foodname">Food name</string>
+    <string name="button_search">Search</string>
 </resources>

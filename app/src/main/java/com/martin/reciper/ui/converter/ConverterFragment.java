@@ -1,4 +1,4 @@
-package com.martin.reciper.ui.notifications;
+package com.martin.reciper.ui.converter;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,17 +14,17 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.martin.reciper.R;
 
-public class NotificationsFragment extends Fragment {
+public class ConverterFragment extends Fragment {
 
-    private NotificationsViewModel notificationsViewModel;
+    private ConverterViewModel converterViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        notificationsViewModel =
-                ViewModelProviders.of(this).get(NotificationsViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_settings, container, false);
-        final TextView textView = root.findViewById(R.id.text_notifications);
-        notificationsViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        converterViewModel =
+                ViewModelProviders.of(this).get(ConverterViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_converter, container, false);
+        final TextView textView = root.findViewById(R.id.text_dashboard);
+        converterViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);

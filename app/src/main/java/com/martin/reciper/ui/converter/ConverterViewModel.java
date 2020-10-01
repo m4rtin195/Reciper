@@ -1,16 +1,16 @@
-package com.martin.reciper.ui.notifications;
+package com.martin.reciper.ui.converter;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class NotificationsViewModel extends ViewModel {
+public class ConverterViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public NotificationsViewModel() {
+    public ConverterViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is notifications fragment");
+        mText.setValue("converter fragment");
     }
 
     public LiveData<String> getText() {
