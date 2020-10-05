@@ -7,4 +7,18 @@
     <string name="text_search">YouTube Search:</string>
     <string name="foodname">Food name</string>
     <string name="button_search">Search</string>
+    <string name="recipe_name">Recipe name</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="my_recipes">My Recipes:</string>
+    <string name="decagrams">Decagrams</string>
+    <string name="cups">Cups</string>
+    <string name="grams">Grams</string>
+    <string name="spoons">Spoons</string>
+    <string name="tea_spoons">Tea Spoons</string>
+    <string name="milliliters">Milliliters</string>
+    <string name="pints">Pints</string>
+    <string name="ounces">Ounces</string>
+    <string name="devideto">Devide to:</string>
+    <string name="portions">portions:</string>
+    <string name="test">Test</string>
 </resources>

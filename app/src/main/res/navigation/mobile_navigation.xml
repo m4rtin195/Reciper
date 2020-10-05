@@ -22,4 +22,10 @@
         android:name="com.martin.reciper.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
         tools:layout="@layout/fragment_settings" />
+
+    <fragment
+        android:id="@+id/recipe"
+        android:name="com.martin.reciper.ui.recipe.RecipeFragment"
+        android:label="Recipe"
+        tools:layout="@layout/fragment_recipe" />
 </navigation>
