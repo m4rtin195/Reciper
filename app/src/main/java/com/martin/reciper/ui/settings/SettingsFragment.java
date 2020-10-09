@@ -41,7 +41,7 @@ public class SettingsFragment extends Fragment
             {
                 Fragment fragment = new RecipeFragment();
                 FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.recipe, fragment).commit();
+                fragmentManager.beginTransaction().replace(R.id.fragment_recipe, fragment).commit();
             }
         });
 

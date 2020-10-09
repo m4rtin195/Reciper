@@ -18,7 +18,7 @@
     <string name="milliliters">Milliliters</string>
     <string name="pints">Pints</string>
     <string name="ounces">Ounces</string>
-    <string name="devideto">Devide to:</string>
+    <string name="divideto">Devide to:</string>
     <string name="portions">portions:</string>
     <string name="test">Test</string>
 </resources>

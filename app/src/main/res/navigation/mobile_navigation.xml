@@ -24,7 +24,7 @@
         tools:layout="@layout/fragment_settings" />
 
     <fragment
-        android:id="@+id/recipe"
+        android:id="@+id/fragment_recipe"
         android:name="com.martin.reciper.ui.recipe.RecipeFragment"
         android:label="Recipe"
         tools:layout="@layout/fragment_recipe" />
