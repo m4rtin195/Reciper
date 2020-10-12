@@ -10,7 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -36,12 +36,18 @@ public class SettingsFragment extends Fragment
         });
 
         final Button button = (Button) root.findViewById(R.id.stlacadlo);
-        button.setOnClickListener(new View.OnClickListener() {
+        final TextView txt = root.findViewById(R.id.text_abcd);
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
             public void onClick(View v)
             {
-                Fragment fragment = new RecipeFragment();
-                FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.fragment_recipe, fragment).commit();
+                FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.container, new RecipeFragment());
+                fragmentTransaction.commit();
+                button.setVisibility(View.GONE);
+                txt.setVisibility(View.GONE);
+
             }
         });
 
