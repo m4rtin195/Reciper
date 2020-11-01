@@ -1,52 +1,59 @@
 package com.martin.reciper.ui.home;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.textfield.TextInputEditText;
+import com.martin.reciper.AppActivity;
+import com.martin.reciper.AppDatabase;
 import com.martin.reciper.R;
+import com.martin.reciper.Recipe;
 import com.martin.reciper.RecipeAdapter;
-import com.martin.reciper.RecipeRcrd;
+import com.martin.reciper.ui.recipe.RecipeFragment;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class HomeFragment extends Fragment
 {
     private HomeViewModel homeViewModel;
 
+    @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState)
     {
-        homeViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
-        final View root = inflater.inflate(R.layout.fragment_home, container, false);
-        final TextView textView = root.findViewById(R.id.text_home);
-        final Button searchBtn = root.findViewById(R.id.button_search);
-        final EditText queryEdt = root.findViewById(R.id.edit_query);
+        homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        final View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        final Button deleteBtn = root.findViewById(R.id.button2);
+        final TextView textView = view.findViewById(R.id.text_home); //zostatok zo sablony
+        final Button searchBtn = view.findViewById(R.id.button_search);
+        final EditText queryEdt = view.findViewById(R.id.edit_query);
+
+        final Button deleteBtn = view.findViewById(R.id.button2); //zmazat
         deleteBtn.setVisibility(View.GONE);
+        final View textfield = view.findViewById(R.id.textView31);
 
-        final View textfield = root.findViewById(R.id.textView31);
-        final ConstraintLayout layout = (ConstraintLayout) root.findViewById(R.id.baseLayout);
+        textfield.setOnClickListener(view1 ->
+        {
+            FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.container, new RecipeFragment());
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+        });
+
 
         deleteBtn.setOnClickListener(new View.OnClickListener()
         {
@@ -59,33 +66,33 @@ public class HomeFragment extends Fragment
             }
         });
 
-        ListView recepty_listview = (ListView) root.findViewById(R.id.zoznam_receptov);
-        //ArrayList<String> recepty_array = new ArrayList<String>();
-        //ArrayList<RecipeRcrd> recepty_array = new ArrayList<RecipeRcrd>();
-        //ArrayAdapter adapter = new ArrayAdapter<LinearLayout>(getActivity(), android.R.layout.simple_list_item_1, recepty_array);
-        //recepty_listview.setAdapter(adapter);
+        ListView list_recipes = view.findViewById(R.id.list_recipes);
+        ArrayList<Recipe> recepty = new ArrayList<>();
+        recepty.add(new Recipe()._setRecipeName("Kolac")._setRecipeRating(1.2f)
+                ._setIngredients(new ArrayList<>(Arrays.asList("bravcove maso", "skorica", "mrkva"))));
+        recepty.add(new Recipe()._setRecipeName("Omeleta")._setRecipeRating(1.2f));
+        Log.i("daco", recepty.get(0).getRecipeName()+recepty.get(0).getRecipeRating());
+
+        AppDatabase db = AppActivity.getDatabase();
+        db.recipeDAO().insert(recepty.get(0));
+
+
+        RecipeAdapter adapter = new RecipeAdapter(getActivity(), R.layout.row_recipe, recepty);
+        list_recipes.setAdapter(adapter);
 
 /*
-        ArrayAdapter adapter = new ArrayAdapter<RecipeAdapter>(getActivity(),)
-
-        zaznam.addView(nazov);
-
-        adapter.add(zaznam);
         adapter.notifyDataSetChanged();
 */
 
 
 
-        searchBtn.setOnClickListener(new View.OnClickListener()
+        ///OK
+        searchBtn.setOnClickListener(view3 ->
         {
-            @Override
-            public void onClick(View view)
-            {
-                Intent intent = new Intent(Intent.ACTION_SEARCH);
-                intent.setPackage("com.google.android.youtube");
-                intent.putExtra("query", queryEdt.getText().toString());
-                startActivity(intent);
-            }
+            Intent intent = new Intent(Intent.ACTION_SEARCH);
+            intent.setPackage("com.google.android.youtube");
+            intent.putExtra("query", queryEdt.getText().toString());
+            startActivity(intent);
         });
 
         homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>()
@@ -96,6 +103,6 @@ public class HomeFragment extends Fragment
                 textView.setText(s);
             }
         });
-        return root;
+        return view;
     }
 }

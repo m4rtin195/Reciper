@@ -15,7 +15,7 @@
         android:scaleY="0.8"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_receipeName" />
+        app:layout_constraintTop_toBottomOf="@+id/edit_recipeName" />
 
     <VideoView
         android:id="@+id/videoView"
@@ -32,8 +32,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ratingBar" />
 
-    <TextView
-        android:id="@+id/text_receipeName"
+    <EditText
+        android:id="@+id/edit_recipeName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -41,7 +41,10 @@
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:clickable="false"/>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -71,7 +74,7 @@
 
             <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="8dp">
@@ -80,10 +83,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-
-                    <ListView
-                        android:layout_width="match_parent"
-                        android:layout_height="58dp" />
 
                     <CheckedTextView
                         android:id="@+id/checkedTextView2"
@@ -111,12 +110,18 @@
                         android:paddingVertical="2dp"
                         android:text="Ingredient 3" />
 
+                    <ListView
+                        android:layout_width="match_parent"
+                        android:layout_height="58dp"
+                        android:visibility="gone" />
+
                 </LinearLayout>
             </ScrollView>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="50dp"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:paddingVertical="16dp">
@@ -142,14 +147,28 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1">
-
+<!--
             <TextView
                 android:id="@+id/text_recipeText"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="8dp"
-                android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas. Morbi ullamcorper ac lectus nec suscipit. Donec eget nibh pulvinar, ornare odio laoreet, tempus est. Nunc pharetra quis massa eu congue. Praesent feugiat lectus vel lectus iaculis, id accumsan neque pellentesque. Quisque a est venenatis, tempus ante vitae, egestas urna." />
+                android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas. Morbi ullamcorper ac lectus nec suscipit. Donec eget nibh pulvinar, ornare odio laoreet, tempus est. Nunc pharetra quis massa eu congue. Praesent feugiat lectus vel lectus iaculis, id accumsan neque pellentesque. Quisque a est venenatis, tempus ante vitae, egestas urna."
+                android:visibility="gone" />
+-->
+            <EditText
+                android:id="@+id/edit_recipeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:clickable="false"
+                android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas."
+                />
+
         </ScrollView>
 
     </LinearLayout>

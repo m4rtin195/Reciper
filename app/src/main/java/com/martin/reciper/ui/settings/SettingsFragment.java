@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.martin.reciper.R;
 import com.martin.reciper.ui.recipe.RecipeFragment;
@@ -23,9 +23,9 @@ public class SettingsFragment extends Fragment
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        settingsViewModel = ViewModelProviders.of(this).get(SettingsViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_settings, container, false);
-        final TextView textView = root.findViewById(R.id.text_notifications);
+        settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
+        View view = inflater.inflate(R.layout.fragment_settings, container, false);
+        final TextView textView = view.findViewById(R.id.text_notifications);
         settingsViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>()
         {
             @Override
@@ -35,8 +35,8 @@ public class SettingsFragment extends Fragment
             }
         });
 
-        final Button button = (Button) root.findViewById(R.id.stlacadlo);
-        final TextView txt = root.findViewById(R.id.text_abcd);
+        final Button button = (Button) view.findViewById(R.id.stlacadlo);
+        final TextView txt = view.findViewById(R.id.text_abcd);
 
         button.setOnClickListener(new View.OnClickListener()
         {
@@ -51,6 +51,6 @@ public class SettingsFragment extends Fragment
             }
         });
 
-        return root;
+        return view;
     }
 }

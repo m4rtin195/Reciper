@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.martin.reciper.R;
 
@@ -18,11 +18,12 @@ public class ConverterFragment extends Fragment
 {
     private ConverterViewModel converterViewModel;
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        converterViewModel = ViewModelProviders.of(this).get(ConverterViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_converter, container, false);
-        final TextView textView = root.findViewById(R.id.text_dashboard);
+        converterViewModel = new ViewModelProvider(this).get(ConverterViewModel.class);
+        View view = inflater.inflate(R.layout.fragment_converter, container, false);
+        final TextView textView = view.findViewById(R.id.text_dashboard);
         converterViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>()
         {
             @Override
@@ -31,6 +32,6 @@ public class ConverterFragment extends Fragment
                 textView.setText(s);
             }
         });
-        return root;
+        return view;
     }
 }
