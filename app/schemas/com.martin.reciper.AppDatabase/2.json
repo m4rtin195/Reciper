@@ -1,0 +1,64 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "954eb01f2ca6e875a88f5a36cba43f3a",
+    "entities": [
+      {
+        "tableName": "Recipe",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `recipeName` TEXT, `recipeRating` REAL NOT NULL, `procedureText` TEXT, `ingredients` TEXT, `videoURL` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recipeName",
+            "columnName": "recipeName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "recipeRating",
+            "columnName": "recipeRating",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "procedureText",
+            "columnName": "procedureText",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ingredients",
+            "columnName": "ingredients",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "videoURL",
+            "columnName": "videoURL",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '954eb01f2ca6e875a88f5a36cba43f3a')"
+    ]
+  }
+}
