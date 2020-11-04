@@ -14,7 +14,8 @@ public class HomeViewModel extends ViewModel
         mText.setValue("home fragment");
     }
 
-    public LiveData<String> getText() {
+    public LiveData<String> getText()
+    {
         return mText;
     }
 }

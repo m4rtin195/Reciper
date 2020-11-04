@@ -7,8 +7,7 @@
     <string name="text_search">YouTube Search:</string>
     <string name="foodname">Food name</string>
     <string name="button_search">Search</string>
-    <string name="recipe_name">Recipe name</string>
-    <string name="ingredients">Ingredients</string>
+    <string name="ingredients">Ingredients:</string>
     <string name="my_recipes">My Recipes:</string>
     <string name="decagrams">Decagrams</string>
     <string name="cups">Cups</string>
@@ -20,5 +19,6 @@
     <string name="ounces">Ounces</string>
     <string name="divideto">Devide to:</string>
     <string name="portions">portions:</string>
-    <string name="test">Test</string>
+    <string name="test" translatable="false">Test</string>
+    <string name="title_recipe">Recipe</string>
 </resources>

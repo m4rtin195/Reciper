@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Reciper</string>
+    <string name="title_home">Domov</string>
+    <string name="title_converter">Prevodník</string>
+    <string name="title_settings">Nastavenia</string>
+    <string name="skuska">skuska</string>
+    <string name="text_search">YouTube vyhľadávanie:</string>
+    <string name="button_search">Hľadať</string>
+    <string name="ingredients">Suroviny:</string>
+    <string name="my_recipes">Moje recepty:</string>
+    <string name="decagrams">Dekagramy</string>
+    <string name="cups">Šálky</string>
+    <string name="grams">Gramy</string>
+    <string name="spoons">Lyžice</string>
+    <string name="tea_spoons">Lyžičky</string>
+    <string name="milliliters">Mililitre</string>
+    <string name="pints">Pinty</string>
+    <string name="portions">porcie:</string>
+    <string name="title_recipe">Recept</string>
+    <string name="divideto">Rozdeliť na:</string>
+    <string name="ounces">Unce</string>
+    <string name="foodname">Názov receptu</string>
+</resources>

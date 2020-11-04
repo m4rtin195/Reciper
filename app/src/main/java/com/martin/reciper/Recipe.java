@@ -1,5 +1,8 @@
 package com.martin.reciper;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -7,7 +10,7 @@ import androidx.room.PrimaryKey;
 import java.util.ArrayList;
 
 @Entity
-public class Recipe
+public class Recipe implements Parcelable
 {
     @PrimaryKey(autoGenerate = true)
     private long id;
@@ -19,11 +22,32 @@ public class Recipe
     private float recipeRating;
 
     @ColumnInfo(name = "procedureText")
-    private String procedureText;
+    private String recipeText;
 
     @ColumnInfo(name = "ingredients")
     private ArrayList<String> ingredients;
 
+    @ColumnInfo(name = "videoURL")
+    private String videoURL;
+
+    public Recipe()
+    {
+        recipeName = "";
+        recipeRating = 0.0f;
+        recipeText = "";
+        ingredients = new ArrayList<>();
+        videoURL = "";
+    }
+
+    public Recipe(Parcel incoming)
+    {
+        id = incoming.readLong();
+        recipeName = incoming.readString();
+        recipeRating = incoming.readFloat();
+        recipeText = incoming.readString();
+        ingredients = incoming.createStringArrayList();
+        videoURL = incoming.readString();
+    }
 
     public long getId()
     {
@@ -58,15 +82,15 @@ public class Recipe
         return this;
     }
 
-    public String getProcedureText()
+    public String getRecipeText()
     {
-        return procedureText;
+        return recipeText;
     }
-    public void setProcedureText(String procedureText) {
-        this.procedureText = procedureText;
+    public void setRecipeText(String recipeText) {
+        this.recipeText = recipeText;
     }
-    public Recipe _setProcedureText(String procedureText) {
-        this.procedureText = procedureText;
+    public Recipe _setRecipeText(String procedureText) {
+        this.recipeText = procedureText;
         return this;
     }
 
@@ -81,4 +105,42 @@ public class Recipe
         this.ingredients = ingredients;
         return this;
     }
+
+    public String getVideoURL() {
+        return videoURL;
+    }
+    public void setVideoURL(String videoURL) {
+        this.videoURL = videoURL;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel outcoming, int flags)
+    {
+        outcoming.writeLong(id);
+        outcoming.writeString(recipeName);
+        outcoming.writeFloat(recipeRating);
+        outcoming.writeString(recipeText);
+        outcoming.writeStringList(ingredients);
+        outcoming.writeString(videoURL);
+    }
+
+    public static final Creator<Recipe> CREATOR = new Creator<Recipe>()
+    {
+        @Override
+        public Recipe[] newArray(int size)
+        {
+            return new Recipe[size];
+        }
+
+        @Override
+        public Recipe createFromParcel(Parcel incoming)
+        {
+            return new Recipe(incoming);
+        }
+    };
 }

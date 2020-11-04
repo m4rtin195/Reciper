@@ -6,16 +6,67 @@
     android:layout_height="match_parent"
     tools:context=".ui.recipe.RecipeFragment" >
 
-    <RatingBar
-        android:id="@+id/ratingBar"
+    <TextView
+        android:id="@+id/text_recipeName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
+        android:text="Recipe name"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:paddingTop="10dp"
+        android:paddingStart="4dp"/>
+
+    <EditText
+        android:id="@+id/edit_recipeName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:text="Recipe name"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="invisible"/>
+
+    <RatingBar
+        android:id="@+id/rating_recipeRating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="-80dp"
+        android:clickable="false"
+        android:isIndicator="true"
         android:scaleX="0.8"
         android:scaleY="0.8"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_recipeName" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/rating_recipeRating"
+        app:layout_constraintTop_toBottomOf="@+id/edit_recipeName">
+
+        <ImageButton
+            android:id="@+id/button_edit"
+            android:layout_width="55dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_edit" />
+
+        <ImageButton
+            android:id="@+id/button_share"
+            android:layout_width="55dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_share" />
+
+    </LinearLayout>
 
     <VideoView
         android:id="@+id/videoView"
@@ -23,39 +74,25 @@
 
         android:layout_height="181dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="32dp"
         android:foreground="@drawable/ic_video"
         android:foregroundGravity="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ratingBar" />
-
-    <EditText
-        android:id="@+id/edit_recipeName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/recipe_name"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:clickable="false"/>
+        app:layout_constraintTop_toBottomOf="@+id/rating_recipeRating" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
+        android:baselineAligned="false"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/videoView"
-        android:baselineAligned="false">
+        app:layout_constraintTop_toBottomOf="@+id/videoView">
 
         <LinearLayout
             android:layout_width="300dp"
@@ -72,103 +109,52 @@
                 android:paddingTop="8dp"
                 android:text="@string/ingredients" />
 
-            <ScrollView
+            <ListView
+                android:id="@+id/list_ingredients"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:divider="#FFFFFF"
                 android:paddingHorizontal="8dp"
-                android:paddingVertical="8dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <CheckedTextView
-                        android:id="@+id/checkedTextView2"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:paddingHorizontal="16dp"
-                        android:paddingVertical="2dp"
-                        android:text="Ingredient 1" />
-
-                    <CheckedTextView
-                        android:id="@+id/checkedTextView3"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="16dp"
-                        android:paddingVertical="2dp"
-                        android:text="Ingredient 2" />
-
-                    <CheckedTextView
-                        android:id="@+id/checkedTextView4"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:paddingHorizontal="16dp"
-                        android:paddingVertical="2dp"
-                        android:text="Ingredient 3" />
-
-                    <ListView
-                        android:layout_width="match_parent"
-                        android:layout_height="58dp"
-                        android:visibility="gone" />
-
-                </LinearLayout>
-            </ScrollView>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="50dp"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:paddingVertical="16dp">
-
-                <ImageButton
-                    android:id="@+id/button_edit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@android:drawable/ic_menu_edit" />
-
-                <ImageButton
-                    android:id="@+id/button_share"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:src="@android:drawable/ic_menu_share" />
-
-            </LinearLayout>
+                android:paddingVertical="8dp"
+                android:textSize="14sp"
+                android:visibility="visible" />
 
         </LinearLayout>
 
         <ScrollView
+            android:id="@+id/scrollView_text_recipeText"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1">
-<!--
+            android:layout_weight="1"
+            android:visibility="visible">
+
             <TextView
                 android:id="@+id/text_recipeText"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="8dp"
-                android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas. Morbi ullamcorper ac lectus nec suscipit. Donec eget nibh pulvinar, ornare odio laoreet, tempus est. Nunc pharetra quis massa eu congue. Praesent feugiat lectus vel lectus iaculis, id accumsan neque pellentesque. Quisque a est venenatis, tempus ante vitae, egestas urna."
-                android:visibility="gone" />
--->
+                android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas."
+                android:textSize="14sp" />
+        </ScrollView>
+
+        <ScrollView
+            android:id="@+id/scrollView_edit_recipeText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:visibility="gone">
+
             <EditText
                 android:id="@+id/edit_recipeText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
                 android:ems="10"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:clickable="false"
                 android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas."
-                />
-
+                android:textSize="14sp" />
         </ScrollView>
 
     </LinearLayout>

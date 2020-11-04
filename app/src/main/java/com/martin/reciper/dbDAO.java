@@ -1,15 +1,15 @@
-package com.martin.reciper.ui;
+package com.martin.reciper;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
-
-import com.martin.reciper.Recipe;
+import androidx.room.Update;
 
 import java.util.List;
 
 @Dao
-public interface dbRecipeDAO
+public interface dbDAO
 {
     @Insert
     void insert(Recipe recipe);
@@ -17,6 +17,15 @@ public interface dbRecipeDAO
     @Query("DELETE FROM Recipe")
     void deleteAll();
 
+    @Delete
+    void delete(Recipe recipe);
+
     @Query("SELECT * FROM Recipe ORDER BY id ASC")
     List<Recipe> getAllRecipes();
+
+    @Query("SELECT * FROM Recipe WHERE id IN (:recipeId)")
+    Recipe getRecipe(int recipeId);
+
+    @Update
+    void updateRecipe(Recipe recipe);
  }
