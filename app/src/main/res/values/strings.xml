@@ -8,6 +8,7 @@
     <string name="foodname">Food name</string>
     <string name="button_search">Search</string>
     <string name="ingredients">Ingredients:</string>
+    <string name="procedure">Procedure:</string>
     <string name="my_recipes">My Recipes:</string>
     <string name="decagrams">Decagrams</string>
     <string name="cups">Cups</string>
@@ -21,4 +22,5 @@
     <string name="portions">portions:</string>
     <string name="test" translatable="false">Test</string>
     <string name="title_recipe">Recipe</string>
+    <string name="video">Video:</string>
 </resources>

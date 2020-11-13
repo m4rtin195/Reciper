@@ -11,7 +11,7 @@ public class SettingsViewModel extends ViewModel
     public SettingsViewModel()
     {
         mText = new MutableLiveData<>();
-        mText.setValue("settings fragment");
+        //mText.setValue("settings fragment");
     }
 
     public LiveData<String> getText() { return mText; }

@@ -1,4 +1,4 @@
-package com.martin.reciper;
+package com.martin.reciper.adapters;
 
 import android.content.Context;
 import android.util.Log;
@@ -9,6 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
+
+import com.martin.reciper.R;
 
 import java.util.ArrayList;
 import java.util.List;

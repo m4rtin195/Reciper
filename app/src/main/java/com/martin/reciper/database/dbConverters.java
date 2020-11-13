@@ -1,4 +1,4 @@
-package com.martin.reciper;
+package com.martin.reciper.database;
 
 import android.util.Log;
 

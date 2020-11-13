@@ -21,4 +21,6 @@
     <string name="divideto">Rozdeliť na:</string>
     <string name="ounces">Unce</string>
     <string name="foodname">Názov receptu</string>
+    <string name="procedure">Postup:</string>
+    <string name="video">Video:</string>
 </resources>

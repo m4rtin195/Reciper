@@ -1,8 +1,10 @@
-package com.martin.reciper;
+package com.martin.reciper.database;
 
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
+
+import com.martin.reciper.Recipe;
 
 @Database(entities = {Recipe.class}, version = 2)
 @TypeConverters({dbConverters.class})
