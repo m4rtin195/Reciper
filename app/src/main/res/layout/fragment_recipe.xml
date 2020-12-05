@@ -25,11 +25,14 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
+        android:hint="@string/foodname"
+        android:importantForAutofill="no"
+        android:inputType="textCapSentences"
         android:text="Recipe name"
         android:textSize="24sp"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:visibility="invisible"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <RatingBar
         android:id="@+id/rating_recipeRating"
@@ -136,7 +139,7 @@
             <TextView
                 android:id="@+id/text_recipeText"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="8dp"
                 android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas."
@@ -154,13 +157,15 @@
             <EditText
                 android:id="@+id/edit_recipeText"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/recipe_procedure"
+                android:inputType="text"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="8dp"
-                android:ems="10"
                 android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas."
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:importantForAutofill="no" />
         </ScrollView>
 
     </LinearLayout>

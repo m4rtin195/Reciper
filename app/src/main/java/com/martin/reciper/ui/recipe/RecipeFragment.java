@@ -3,6 +3,7 @@ package com.martin.reciper.ui.recipe;
 import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -27,7 +28,9 @@ import com.martin.reciper.AppActivity;
 import com.martin.reciper.database.AppDatabase;
 import com.martin.reciper.adapters.IngredientAdapter;
 import com.martin.reciper.R;
-import com.martin.reciper.Recipe;
+import com.martin.reciper.models.Recipe;
+
+import java.util.Objects;
 
 public class RecipeFragment extends Fragment
 {
@@ -57,6 +60,7 @@ public class RecipeFragment extends Fragment
         this.inflater = inflater;
         footerView =  inflater.inflate(R.layout.row_footer, null, false);
 
+        assert getArguments() != null;
         rcpt = getArguments().getParcelable("recipe");
         if(rcpt == null) rcpt = new Recipe();
 
@@ -93,7 +97,7 @@ public class RecipeFragment extends Fragment
             {
                 if(l == -1) //footer
                 {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
                     builder.setTitle("Add ingredient");
                     final EditText input = new EditText(getContext());
                     builder.setView(input);
@@ -103,7 +107,7 @@ public class RecipeFragment extends Fragment
                 else //surovina
                 {
                     String word = ingredients.getItem(i);
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
                     builder.setTitle("Edit ingredient");
                     final EditText input = new EditText(getContext());
                     input.setText(word);
@@ -115,6 +119,7 @@ public class RecipeFragment extends Fragment
             }
         });
 
+        assert getArguments() != null;
         if(getArguments().getBoolean("isNew",false)) onEditMode();
         return view;
     }

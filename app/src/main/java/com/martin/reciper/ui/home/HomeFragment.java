@@ -1,6 +1,8 @@
 package com.martin.reciper.ui.home;
 
+import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,55 +10,69 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.SearchView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.constraintlayout.widget.Group;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.preference.PreferenceManager;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.martin.reciper.AppActivity;
 import com.martin.reciper.database.AppDatabase;
 import com.martin.reciper.R;
-import com.martin.reciper.Recipe;
+import com.martin.reciper.models.Recipe;
 import com.martin.reciper.adapters.RecipesAdapter;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class HomeFragment extends Fragment
 {
     private HomeViewModel homeViewModel;
     AppDatabase db = AppActivity.getDatabase();
-    LayoutInflater inflater;
+    SharedPreferences settings;
+
     NavController navController;
     RecipesAdapter recipesAdapter;
 
-    EditText edit_query;
+    EditText edit_query; //todo on enter listener
     SearchView search_filter;
     Button button_search;
     ListView list_recipes;
+    FloatingActionButton fab_addNew;
+    Group group_youtube;
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState)
     {
         //homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         final View view = inflater.inflate(R.layout.fragment_home, container, false);
-        this.inflater = inflater;
+        settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         navController = NavHostFragment.findNavController(this);
 
         edit_query = view.findViewById(R.id.edit_query);
         button_search = view.findViewById(R.id.button_search);
         search_filter = view.findViewById(R.id.edit_filter);
         list_recipes = view.findViewById(R.id.list_recipes);
-
+        fab_addNew = view.findViewById(R.id.fab_addNew);
+        group_youtube = view.findViewById(R.id.group_youtube);
 
         recipesAdapter = new RecipesAdapter(getActivity(), (ArrayList<Recipe>) db.DAO().getAllRecipes());
         list_recipes.setAdapter(recipesAdapter);
 
-        View footerView =  inflater.inflate(R.layout.row_footer, list_recipes, false);
-        list_recipes.addFooterView(footerView);
+        //View footerView =  inflater.inflate(R.layout.row_footer, list_recipes, false);
+        //list_recipes.addFooterView(footerView);
+
+
+        group_youtube.setVisibility(settings.getBoolean("youtube_enabled", true) ? View.VISIBLE : View.GONE);
 
         button_search.setOnClickListener(view3 ->
         {
@@ -114,8 +130,14 @@ public class HomeFragment extends Fragment
             }
         });
 
+        fab_addNew.setOnClickListener(view13 ->
+        {
+            onNewRecipe();
+        });
+
         return view;
-    }
+    } //onCreateView
+
 
     public void onNewRecipe()
     {
@@ -124,13 +146,15 @@ public class HomeFragment extends Fragment
 
     public void onNewRecipe(String name, String videoURL)
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Add new Recipe");
-        final EditText input = new EditText(getContext());
+        View content = getLayoutInflater().inflate(R.layout.dialog_recipe,null);
+        EditText input = content.findViewById(R.id.editbox);
         if(!name.isEmpty())
             input.setText(name);
-        builder.setView(input);
-        builder.setPositiveButton("Add", (dialog, which) ->
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(requireContext());
+        dialog.setTitle("Add new Recipe");
+        dialog.setView(content);
+        dialog.setPositiveButton("Add", (dialog2, which) ->
         {
             Recipe rcpt = new Recipe();
             //TODO check that is not empty
@@ -144,6 +168,6 @@ public class HomeFragment extends Fragment
             bundle.putBoolean("isNew", true);
             navController.navigate(R.id.action_navigation_home_to_fragment_recipe, bundle);
         });
-        builder.show();
+        dialog.show();
     }
 }

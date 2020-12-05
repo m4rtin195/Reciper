@@ -1,23 +1,25 @@
 package com.martin.reciper.ui.settings;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.RotateAnimation;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,31 +27,102 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.ListPreference;
+import androidx.preference.PreferenceFragmentCompat;
 
 import com.martin.reciper.MainActivity;
-import com.martin.reciper.downloadTask;
+import com.martin.reciper.models.Units;
 import com.martin.reciper.ui.MyProgressBar;
 import com.martin.reciper.ui.MyView;
-import com.martin.reciper.PostsModel;
+import com.martin.reciper.models.PostsModel;
 import com.martin.reciper.R;
-import com.martin.reciper.ui.home.HomeFragment;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
-public class SettingsFragment extends Fragment
+public class SettingsFragment extends PreferenceFragmentCompat
 {
     private SettingsViewModel settingsViewModel;
+    SharedPreferences settings;
+    SharedPreferences.Editor settingsEditor;
     boolean ok = false;
 
+    Button tester;
+    SwitchCompat switch1;
+    Spinner spinnerLanguage;
+
+    @Override
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
+    {
+        setPreferencesFromResource(R.xml.fragment_settings, rootKey);
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        View aa = super.onCreateView(inflater, container, savedInstanceState);
+        setUnitsLists();
+
+
+        //return onCreateView1(inflater, container, savedInstanceState);  //todo remove this
+        return aa;
+    }
+
+    private void setUnitsLists()
+    {
+        ListPreference pref_fav_weight_unit = findPreference("fav_weight_unit");
+        ListPreference pref_fav_volume_unit = findPreference("fav_volume_unit");
+
+        List<Units.Unit> list = Units.getWeightUnits();
+        CharSequence[] entries = new CharSequence[list.size()];
+        CharSequence[] values = new CharSequence[list.size()];
+        for(int i=0; i<list.size(); i++)
+        {
+            entries[i] = list.get(i).getName();
+            values[i] = Integer.toString(list.get(i).getId());
+        }
+        pref_fav_weight_unit.setEntries(entries);
+        pref_fav_weight_unit.setEntryValues(values);
+
+        list = Units.getVolumeUnits();
+        entries = new CharSequence[list.size()];
+        values = new CharSequence[list.size()];
+        for(int i=0; i<list.size(); i++)
+        {
+            entries[i] = list.get(i).getName();
+            values[i] = Integer.toString(list.get(i).getId());
+        }
+        pref_fav_volume_unit.setEntries(entries);
+        pref_fav_volume_unit.setEntryValues(values);
+    }
+
+    public View onCreateView1(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
-        SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
+        settings = getActivity().getPreferences(Context.MODE_PRIVATE);
+
+        tester = view.findViewById(R.id.button_tester);
+        tester.setOnClickListener(testerListener);
+
+        spinnerLanguage = view.findViewById(R.id.spinner_language);
+        ArrayAdapter<String> languagesAdapter = new ArrayAdapter<>(getContext(), android.R.layout.select_dialog_singlechoice, Arrays.asList(getResources().getStringArray(R.array.languages_entries)));
+        languagesAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
+        spinnerLanguage.setAdapter(languagesAdapter);
+        spinnerLanguage.setSelection(settings.getInt("language", 0));
+        spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override public void onNothingSelected(AdapterView<?> adapterView) {}
+            @Override public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
+            {
+                settingsEditor = settings.edit();
+                settingsEditor.putInt("language", i).apply();
+
+            }
+        });
 
         final TextView textView = view.findViewById(R.id.text_notifications);
         settingsViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>()
@@ -61,8 +134,8 @@ public class SettingsFragment extends Fragment
             }
         });
 
-        final SwitchCompat switch1 = view.findViewById(R.id.switch1);
 
+        switch1 = view.findViewById(R.id.switch1);
         switch1.setChecked(settings.getBoolean("test",false));
         switch1.setOnCheckedChangeListener((compoundButton, state) ->
         {
@@ -206,4 +279,23 @@ public class SettingsFragment extends Fragment
             indikator.invalidate();
         }
     }
+
+    public static void setLocaleOld(Activity activity, String languageCode)
+    {
+        Locale locale = new Locale(languageCode);
+        Locale.setDefault(locale);
+        Resources resources = activity.getResources();
+        Configuration config = resources.getConfiguration();
+        config.setLocale(locale);
+        resources.updateConfiguration(config, resources.getDisplayMetrics());
+    }
+
+
+
+
+    View.OnClickListener testerListener = view ->
+    {
+        ((MainActivity)getActivity()).mySetLocale(new Locale("sk_SK"));
+        getActivity().recreate();
+    };
 }

@@ -54,6 +54,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/defenseEditText" />
 
+    <Button
+        android:id="@+id/button_tester"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="33dp"
+        android:layout_marginTop="17dp"
+        android:text="Button"
+        app:layout_constraintStart_toEndOf="@+id/defenseButton"
+        app:layout_constraintTop_toBottomOf="@+id/defenseEditText" />
+
     <com.martin.reciper.ui.MyView
         android:id="@+id/myview"
         android:layout_width="100dp"
@@ -97,9 +107,19 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="60dp"
         android:max="100"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/progressBar2" />
 
+    <Spinner
+        android:id="@+id/spinner_language"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:prompt="@string/toto_je_prompt"
+        android:spinnerMode="dialog"
+        app:layout_constraintBottom_toTopOf="@+id/switch1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/switch1"
@@ -114,7 +134,8 @@
     <FrameLayout
         android:id="@+id/fullscr"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
     </FrameLayout>
 

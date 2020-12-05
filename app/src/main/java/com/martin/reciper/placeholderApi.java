@@ -1,5 +1,7 @@
 package com.martin.reciper;
 
+import com.martin.reciper.models.PostsModel;
+
 import java.util.List;
 
 import retrofit2.Call;

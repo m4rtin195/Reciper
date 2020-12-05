@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "975967877556",
+    "firebase_url": "https://reciper-9b61e.firebaseio.com",
+    "project_id": "reciper-9b61e",
+    "storage_bucket": "reciper-9b61e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:975967877556:android:3871571ae665bc441f1ae1",
+        "android_client_info": {
+          "package_name": "com.martin.reciper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "975967877556-1vi7v5klb2o820utfncvqntogi30van8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBug9kt2DzXTyHJ8LrlAYoI5PHV2USFUzc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "975967877556-1vi7v5klb2o820utfncvqntogi30van8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

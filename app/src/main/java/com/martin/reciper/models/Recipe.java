@@ -1,4 +1,4 @@
-package com.martin.reciper;
+package com.martin.reciper.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;

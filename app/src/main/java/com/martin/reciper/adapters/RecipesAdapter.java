@@ -1,7 +1,6 @@
 package com.martin.reciper.adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +12,9 @@ import android.widget.Filterable;
 import android.widget.TextView;
 
 import com.martin.reciper.R;
-import com.martin.reciper.Recipe;
+import com.martin.reciper.models.Recipe;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class RecipesAdapter extends ArrayAdapter<Recipe> implements Filterable
 {
@@ -43,7 +41,7 @@ public class RecipesAdapter extends ArrayAdapter<Recipe> implements Filterable
         {
             LayoutInflater vi = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             view = vi.inflate(R.layout.row_recipe, null);
-            view.startAnimation(anim);
+            //view.startAnimation(anim);
         }
 
         Recipe object = array.get(position);

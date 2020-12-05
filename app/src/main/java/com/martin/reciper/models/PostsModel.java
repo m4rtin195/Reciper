@@ -1,5 +1,6 @@
-package com.martin.reciper;
+package com.martin.reciper.models;
 
+@Deprecated
 public class PostsModel
 {
     int id;

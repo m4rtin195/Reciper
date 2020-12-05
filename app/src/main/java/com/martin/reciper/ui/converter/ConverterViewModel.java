@@ -11,7 +11,7 @@ public class ConverterViewModel extends ViewModel
     public ConverterViewModel()
     {
         mText = new MutableLiveData<>();
-        mText.setValue("converter fragment");
+        //mText.setValue("converter fragment");
     }
 
     public LiveData<String> getText() {

@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.martin.reciper.models.PostsModel;
 import com.martin.reciper.ui.settings.SettingsFragment;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+@Deprecated
 public class downloadTask extends AsyncTask<Void, Integer, List<PostsModel>>
 {
     SettingsFragment caller;
@@ -64,6 +66,6 @@ public class downloadTask extends AsyncTask<Void, Integer, List<PostsModel>>
     protected void onPostExecute(List<PostsModel> results)
     {
         Log.i("daco", "som v postexecute, size: " + results.size());
-        caller.onDownloadCompleted(success, results);
+        //caller.onDownloadCompleted(success, results);
     }
 }

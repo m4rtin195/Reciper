@@ -1,26 +1,52 @@
 <resources>
+    <!-- App Basics -->
     <string name="app_name">Reciper</string>
     <string name="title_home">Home</string>
+
     <string name="title_converter">Converter</string>
     <string name="title_settings">Settings</string>
     <string name="skuska">skuska</string>
+    <string name="toto_je_prompt"/>
+    <string name="test" translatable="false">Test</string>
+
+    <!-- Recipes -->
     <string name="text_search">YouTube Search:</string>
     <string name="foodname">Food name</string>
     <string name="button_search">Search</string>
     <string name="ingredients">Ingredients:</string>
     <string name="procedure">Procedure:</string>
     <string name="my_recipes">My Recipes:</string>
+    <string name="title_recipe">Recipe</string>
+    <string name="video">Video:</string>
+
+    <!-- Converter -->
     <string name="decagrams">Decagrams</string>
     <string name="cups">Cups</string>
     <string name="grams">Grams</string>
-    <string name="spoons">Spoons</string>
+    <string name="table_spoons">Table Spoons</string>
     <string name="tea_spoons">Tea Spoons</string>
     <string name="milliliters">Milliliters</string>
-    <string name="pints">Pints</string>
+    <string name="pints">UK Pints</string>
     <string name="ounces">Ounces</string>
-    <string name="divideto">Devide to:</string>
+    <string name="recalcto">Recalculate to</string>
     <string name="portions">portions:</string>
-    <string name="test" translatable="false">Test</string>
-    <string name="title_recipe">Recipe</string>
-    <string name="video">Video:</string>
+
+    <!-- Preferences -->
+    <string name="converter">Ingredients converter</string>
+    <string name="app_version" translatable="false">0.5</string>
+    <string name="title_version">Version</string>
+    <string name="app_about">This application is a semestral project for Fundamentals of App Development (T120B169) course, at KTU university in Kaunas.\n© Martin Timko, 2020</string>
+    <string name="browse_github">Browse GitHub repository</string>
+    <string name="contact_developer">Contact developer</string>
+    <string name="enable_youtube">Enable YouTube search</string>
+    <string name="enable_youtube_on">Searching video recipes is allowed</string>
+    <string name="enable_youtube_off">Searching video recipes is disabled</string>
+    <string name="cloud_backup">Cloud backup</string>
+    <string name="fav_weight_unit">Preferred weight unit</string>
+    <string name="fav_volume_unit">Preferred volume unit</string>
+    <string name="choose_email_client">Choose an email client</string>
+    <string name="contact_developer_2">Feel free to contact me!</string>
+    <string name="add_new">Add new</string>
+    <string name="recipe_procedure">Recipe procedure</string>
+
 </resources>
