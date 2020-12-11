@@ -3,11 +3,11 @@ package com.martin.reciper;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipDescription;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.LocaleList;
@@ -20,12 +20,15 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.martin.reciper.ui.home.HomeFragment;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
+import androidx.navigation.NavDestination;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.preference.PreferenceManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,38 +39,48 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity
 {
-    BottomNavigationView navBar;
+    SharedPreferences settings;
+    BottomNavigationView navbar;
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         setTheme(R.style.AppTheme);
-        //mySetLocale(new Locale("sk"));
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+
         Log.i("daco", "--------------------------------------");
         LocaleList current = getResources().getConfiguration().getLocales();
         Log.i("daco", "current locale: " + current.toString());
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        navbar = findViewById(R.id.navbar);
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar); //set toolbar as actionbar
 
-        navBar = findViewById(R.id.nav_bar);
+        //NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavController navController = ((NavHostFragment) Objects.requireNonNull(getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment))).getNavController();
+        navController.addOnDestinationChangedListener(onDestinationChangedListener);
 
-        // Passing each menu ID as a set of Ids because each menu should be considered as top level destinations.
-        //AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_home, R.id.navigation_converter, R.id.navigation_settings).build();
+        //Passing each menu ID as a set of Ids because each menu should be considered as top level destinations.
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_home, R.id.navigation_converter, R.id.navigation_settings).build();
 
         //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration); //ActionBar setup
-        NavigationUI.setupWithNavController(navBar, navController); //NavBar setup
+        NavigationUI.setupWithNavController(navbar, navController); //Navbar setup
+        NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration); //Toolbar setup
 
         final View activityRootView = getWindow().getDecorView().findViewById(android.R.id.content);
         activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener); //keyboard listener
+
     }
 
     @Override
@@ -75,10 +88,13 @@ public class MainActivity extends AppCompatActivity
     {
         super.onStart();
         Intent intent = getIntent();
-        if(intent.getAction().equals(Intent.ACTION_SEND))
+        if(intent!=null)
         {
-            resolveIntent(intent);
-            setIntent(new Intent());
+            if (intent.getAction().equals(Intent.ACTION_SEND))
+            {
+                resolveIntent(intent);
+                setIntent(new Intent());
+            }
         }
 
 /*        Log.i("daco", "onStart()");
@@ -89,6 +105,54 @@ public class MainActivity extends AppCompatActivity
         else Log.i("daco", hf.toString());*/
     }
 
+    @Override
+    protected void attachBaseContext(Context newBase)
+    {
+        super.attachBaseContext(newBase);
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        if(!settings.getString("language", "system").equals("system"))
+            applyOverrideConfiguration(new Configuration());
+    }
+
+    @Override
+    public void applyOverrideConfiguration(Configuration newConfig)
+    {
+        super.applyOverrideConfiguration(updateConfigurationLanguage(newConfig));
+    }
+
+    private Configuration updateConfigurationLanguage(Configuration config)
+    {
+        if (Build.VERSION.SDK_INT >= 24)
+        {
+            if (!config.getLocales().isEmpty())
+                return config;
+        }
+        else
+        {
+            if (config.locale != null)
+                return config;
+        }
+
+        String languageStr = settings.getString("language", "system");
+        Locale newLocale = stringToLocale(languageStr);
+        if(newLocale != null)
+            config.setLocale(newLocale);
+
+        return config;
+    }
+
+    private Locale stringToLocale(String s)
+    {
+        Log.i("daco", "Changing language to: " + s);
+        StringTokenizer tempStringTokenizer = new StringTokenizer(s,"_");
+        String language = new String();
+        String country = new String();
+        if(tempStringTokenizer.hasMoreTokens())
+            language = (String) tempStringTokenizer.nextElement();
+        if(tempStringTokenizer.hasMoreTokens())
+            country = (String) tempStringTokenizer.nextElement();
+        return new Locale(language, country);
+    }
 
     @SuppressWarnings("deprecation") //progress dialog
     protected void resolveIntent(Intent intent)
@@ -134,15 +198,12 @@ public class MainActivity extends AppCompatActivity
         dialog.setMessage("Fetching data. Please wait...");
         dialog.show();
 
-
-
         Thread thr = new Thread(() ->
         {
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
             try
             {
-
                 URL url = new URL("https://www.youtube.com/oembed?url=" + videoURL.get() + "&format=json");
                 connection = (HttpsURLConnection) url.openConnection();
                 connection.connect();
@@ -176,16 +237,13 @@ public class MainActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
             }
-        });
+        }); //thread
         thr.start();
         try {thr.join();} catch(InterruptedException e) {e.printStackTrace();}
 
-        dialog.dismiss();
-        Toast.makeText(this, videoTitle.get(), Toast.LENGTH_LONG).show();
-        Log.i("daco", "vysledok mimo thready: " + videoTitle.get());
+        dialog.dismiss(); //??
 
-
-        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment); //aky ma toto zmysel? O.o
         try
         {
             //TODO ziskat korektnou cestou
@@ -216,9 +274,6 @@ public class MainActivity extends AppCompatActivity
 
     public void onContactDeveloper()
     {
-        Log.i("daco", "--- contact developer ---");
-        Toast.makeText(this, "Contacting developer", Toast.LENGTH_LONG).show();
-
         String body = null;
         try
         {
@@ -227,30 +282,14 @@ public class MainActivity extends AppCompatActivity
                     Build.VERSION.RELEASE + "\n App Version: " + body + "\n Device Brand: " + Build.BRAND +
                     "\n Device Model: " + Build.MODEL + "\n Device Manufacturer: " + Build.MANUFACTURER;
         }
-        catch(PackageManager.NameNotFoundException e)
-        {}
+        catch(PackageManager.NameNotFoundException ignored) {}
 
-        Intent emailIntent = new Intent(Intent.ACTION_SENDTO); //todo or just _send?
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
         emailIntent.setType("message/rfc822");
-        //emailIntent.setData(Uri.parse("mailto:"));
         emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"martin.timko@centrum.sk", "martin.timko@ktu.edu"});
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Query from Reciper app");
         emailIntent.putExtra(Intent.EXTRA_TEXT, body);
         startActivity(Intent.createChooser(emailIntent, getString(R.string.choose_email_client)));
-    }
-
-    public void mySetLocale(Locale locale)
-    {
-        Log.i("daco", "menim locale: " + locale.toString());
-        //Locale locale = new Locale(languageCode);
-        Resources resources = getResources();
-        Configuration configuration = resources.getConfiguration();
-        configuration.setLocale(locale);
-        createConfigurationContext(configuration);
-        recreate();
-
-//        finish();
-//        startActivity(getIntent());
     }
 
     ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener()
@@ -263,19 +302,29 @@ public class MainActivity extends AppCompatActivity
             View activityRootView = getWindow().getDecorView().findViewById(android.R.id.content);
 
             int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
-            if(heightDiff > 300)  // difference between RootView a FragmentView, incluing all actionbar
+            if(heightDiff > 500)  // difference between RootView a FragmentView, incluing all actionbar
             {
                 if(!isOpened)   //just opened
                 {
-                    navBar.setVisibility(View.GONE);
+                    navbar.setVisibility(View.GONE);
                     isOpened = true;
                 }
             }
             else if(isOpened)   //just closed
             {
-                navBar.setVisibility(View.VISIBLE);
+                navbar.setVisibility(View.VISIBLE);
                 isOpened = false;
             }
+        }
+    };
+
+    NavController.OnDestinationChangedListener onDestinationChangedListener = new NavController.OnDestinationChangedListener()
+    {
+        @Override
+        public void onDestinationChanged(@NonNull NavController controller, @NonNull NavDestination destination, @Nullable Bundle arguments)
+        {
+            //Toast.makeText(MainActivity.this, "navigation event", Toast.LENGTH_SHORT).show();
+            //todo find home fragment and call remove search button
         }
     };
 }

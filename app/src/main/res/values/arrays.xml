@@ -14,13 +14,11 @@
         <item>(System language)</item>
         <item>English</item>
         <item>Slovak</item>
-        <item>dummy</item>
     </string-array>
 
     <string-array name="languages_values">
         <item>system</item>
         <item>en_US</item>
         <item>sk_SK</item>
-        <item>dummy</item>
     </string-array>
 </resources>

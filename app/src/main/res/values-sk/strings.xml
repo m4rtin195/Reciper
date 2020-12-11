@@ -5,8 +5,7 @@
     <string name="title_converter">Prevodník</string>
     <string name="title_settings">Nastavenia</string>
     <string name="skuska">skuska</string>
-    <string name="text_search">YouTube vyhľadávanie:</string>
-    <string name="button_search">Hľadať</string>
+    <string name="text_youtube_search">YouTube vyhľadávanie:</string>
     <string name="ingredients">Suroviny:</string>
     <string name="my_recipes">Moje recepty:</string>
     <string name="decagrams">Dekagramy</string>
@@ -37,4 +36,17 @@
     <string name="contact_developer_2">Neváhajte ma kontaktovať!</string>
     <string name="enable_youtube_on">Vyhľadávanie videoreceptov je povolené</string>
     <string name="enable_youtube_off">Vyhľadávanie videoreceptov je zakázané</string>
+    <string name="add">Pridať</string>
+    <string name="recipe_procedure">Postup receptu</string>
+    <string name="edit">Upraviť</string>
+    <string name="share">Zdieľať</string>
+    <string name="recipe_create">Vytvoriť nový recept</string>
+    <string name="create">Vytvoriť</string>
+    <string name="search">Hľadať</string>
+    <string name="automatic">(automaticky)</string>
+    <string name="edit_ingredient">Upraviť ingredienciu</string>
+    <string name="save">Uložiť</string>
+    <string name="delete">Vymazať</string>
+    <string name="add_ingredient">Pridať ingredienciu</string>
+    <string name="default_portions_ratio">Predvolený počet porcií</string>
 </resources>

@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/navigation_home"
         android:name="com.martin.reciper.ui.home.HomeFragment"
-        android:label="@string/title_home"
+        android:label="@string/app_name"
         tools:layout="@layout/fragment_home" >
         <action
             android:id="@+id/action_navigation_home_to_fragment_recipe"
@@ -29,16 +29,22 @@
         android:id="@+id/navigation_settings"
         android:name="com.martin.reciper.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
-        tools:layout="@layout/fragment_settings" />
+        tools:layout="@layout/fragment_settings" >
+        <action
+            android:id="@+id/action_navigation_settings_self"
+            app:destination="@id/navigation_settings" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_recipe"
         android:name="com.martin.reciper.ui.recipe.RecipeFragment"
         android:label="@string/title_recipe"
         tools:layout="@layout/fragment_recipe">
+
         <argument
             android:name="Recipe"
             app:argType="reference" />
+
         <action
             android:id="@+id/action_navigation_recipe_to_navigation_home"
             app:destination="@id/navigation_home"

@@ -17,7 +17,7 @@
         app:key="youtube_enabled"
         app:summaryOn="@string/enable_youtube_on"
         app:summaryOff="@string/enable_youtube_off"
-        android:icon="@drawable/ic_youtube"
+        android:icon="@drawable/ic_youtube2"
         app:title="@string/enable_youtube" />
 
     <PreferenceCategory
@@ -42,12 +42,28 @@
             android:key="fav_volume_unit"
             android:title="@string/fav_volume_unit"
             app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            android:defaultValue="1/4"
+            android:key="default_portions"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/default_portions_ratio"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory
         android:id="@+id/category_cloud"
         android:title="@string/cloud_backup"
         style="@style/CustomPreferenceCategory" >
+
+        <Preference
+            android:id="@+id/note_backup"
+            android:selectable="false"
+            android:enabled="false"
+            android:title="@string/automatic"
+            style="@style/CustomPreference" />
 
     </PreferenceCategory>
 
@@ -65,6 +81,7 @@
         <Preference
             android:id="@+id/version"
             android:summary="@string/app_version"
+            android:key="version"
             android:title="@string/title_version"
             style="@style/CustomPreference" />
 

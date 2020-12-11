@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_recipe_converter"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_converter"
+        android:title="@string/converter"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_recipe_edit"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_edit"
+        android:title="@string/edit"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_recipe_share"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_share"
+        android:title="@string/share"
+        app:showAsAction="ifRoom" />
+
+</menu>

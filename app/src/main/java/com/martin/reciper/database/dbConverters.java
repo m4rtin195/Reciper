@@ -25,7 +25,7 @@ public class dbConverters
     @TypeConverter
     public static String fromArrayList(ArrayList<String> list)
     {
-        Log.i("daco", "Som v konvertori ArrayList to String");
+        //Log.i("daco", "Som v konvertori ArrayList to String");
         Gson gson = new Gson();
         String json = gson.toJson(list);
         return json;

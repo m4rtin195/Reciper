@@ -29,7 +29,10 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.preference.ListPreference;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.martin.reciper.MainActivity;
@@ -42,6 +45,7 @@ import com.martin.reciper.R;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class SettingsFragment extends PreferenceFragmentCompat
 {
@@ -54,28 +58,59 @@ public class SettingsFragment extends PreferenceFragmentCompat
     SwitchCompat switch1;
     Spinner spinnerLanguage;
 
+    Preference preference_language;
+    Preference preference_version;
+    Preference preference_contactDeveloper;
+    ListPreference pref_fav_weight_unit;
+    ListPreference pref_fav_volume_unit;
+
+    int counter = 0;
+
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
     {
-        setPreferencesFromResource(R.xml.fragment_settings, rootKey);
+        setPreferencesFromResource(R.xml.settings, rootKey);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        View aa = super.onCreateView(inflater, container, savedInstanceState);
-        setUnitsLists();
+        View view = super.onCreateView(inflater, container, savedInstanceState);
 
+        preference_language = findPreference("language");
+        preference_version = findPreference("version");
+        preference_contactDeveloper = findPreference("contact_developer");
+        pref_fav_weight_unit = findPreference("fav_weight_unit");
+        pref_fav_volume_unit = findPreference("fav_volume_unit");
+
+        setUnitsLists();
+        assert preference_contactDeveloper != null;
+        preference_contactDeveloper.setOnPreferenceClickListener(preference ->
+        {
+            ((MainActivity) requireActivity()).onContactDeveloper();
+            return true;
+        });
+        assert preference_language != null;
+        preference_language.setOnPreferenceChangeListener((preference, newValue) ->
+        {
+            requireActivity().recreate();
+            return true;
+        });
+        assert preference_version != null;
+        preference_version.setOnPreferenceClickListener((preference) ->
+        {
+            counter++;
+            if(counter >= 5)
+                Toast.makeText(requireContext(), getString(R.string.easter_egg), Toast.LENGTH_LONG).show();
+            return true;
+        });
 
         //return onCreateView1(inflater, container, savedInstanceState);  //todo remove this
-        return aa;
+        return view;
     }
 
     private void setUnitsLists()
     {
-        ListPreference pref_fav_weight_unit = findPreference("fav_weight_unit");
-        ListPreference pref_fav_volume_unit = findPreference("fav_volume_unit");
-
         List<Units.Unit> list = Units.getWeightUnits();
         CharSequence[] entries = new CharSequence[list.size()];
         CharSequence[] values = new CharSequence[list.size()];
@@ -253,14 +288,15 @@ public class SettingsFragment extends PreferenceFragmentCompat
         MyProgressBar myPrgBar = view.findViewById(R.id.myPrgBar);
         myPrgBar.setProgress(20);
 
+        //defense 3
 
         return view;
     }
 
     public void onDownloadCompleted(boolean success, List<PostsModel> prispevky)
     {
-        MyView indikator = getActivity().findViewById(R.id.myview);
-        ProgressBar prgbar = getActivity().findViewById(R.id.progressBar);
+        MyView indikator = requireActivity().findViewById(R.id.myview);
+        ProgressBar prgbar = requireActivity().findViewById(R.id.progressBar);
 
         if(success)
         {
@@ -280,22 +316,9 @@ public class SettingsFragment extends PreferenceFragmentCompat
         }
     }
 
-    public static void setLocaleOld(Activity activity, String languageCode)
-    {
-        Locale locale = new Locale(languageCode);
-        Locale.setDefault(locale);
-        Resources resources = activity.getResources();
-        Configuration config = resources.getConfiguration();
-        config.setLocale(locale);
-        resources.updateConfiguration(config, resources.getDisplayMetrics());
-    }
-
-
-
 
     View.OnClickListener testerListener = view ->
     {
-        ((MainActivity)getActivity()).mySetLocale(new Locale("sk_SK"));
-        getActivity().recreate();
+        requireActivity().recreate();
     };
 }

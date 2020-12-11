@@ -1,42 +1,53 @@
 package com.martin.reciper.ui.recipe;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.lifecycle.ViewModelProvider;
-
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.martin.reciper.AppActivity;
-import com.martin.reciper.database.AppDatabase;
-import com.martin.reciper.adapters.IngredientAdapter;
+import com.martin.reciper.MainActivity;
 import com.martin.reciper.R;
+import com.martin.reciper.adapters.IngredientAdapter;
+import com.martin.reciper.database.AppDatabase;
 import com.martin.reciper.models.Recipe;
 
-import java.util.Objects;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class RecipeFragment extends Fragment
 {
     RecipeViewModel recipeViewModel;
     AppDatabase db = AppActivity.getDatabase();
-    LayoutInflater inflater;
+    Menu menu;
     Recipe rcpt;
     IngredientAdapter ingredients;
 
@@ -48,17 +59,25 @@ public class RecipeFragment extends Fragment
     ScrollView scrollView_text_recipeText, scrollView_edit_recipeText;
     WebView web_video;
 
-    View footerView;
+    View footerView_ingredients;
 
     boolean editMode = false;
+
+    ImageView image_photo; //todo defence delete this
+
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
         recipeViewModel = new ViewModelProvider(this).get(RecipeViewModel.class);
         View view = inflater.inflate(R.layout.fragment_recipe, container, false);
-        this.inflater = inflater;
-        footerView =  inflater.inflate(R.layout.row_footer, null, false);
+        footerView_ingredients =  inflater.inflate(R.layout.row_footer, null, false);
 
         assert getArguments() != null;
         rcpt = getArguments().getParcelable("recipe");
@@ -85,7 +104,10 @@ public class RecipeFragment extends Fragment
 
         web_video.getSettings().setJavaScriptEnabled(true);
         web_video.setWebChromeClient(new WebChromeClient());
-        web_video.loadData("<iframe width=\"311\" height=\"166\" src=\"https://www.youtube.com/embed/g6BFZ3e69ms\" frameborder=\"0\" allowfullscreen></iframe>", "text/html", "utf-8");
+        int n = rcpt.getVideoURL().lastIndexOf('/');
+        String videoID = rcpt.getVideoURL().substring(n+1);
+        String iframe = "<iframe width=\"311\" height=\"166\" src=\"https://www.youtube.com/embed/" + videoID + "\" frameborder=\"0\" allowfullscreen></iframe>";
+        web_video.loadData(iframe, "text/html", "utf-8");
         web_video.setForeground(null);
 
         button_edit.setOnClickListener(view1 -> {onEditMode();});
@@ -98,22 +120,23 @@ public class RecipeFragment extends Fragment
                 if(l == -1) //footer
                 {
                     AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-                    builder.setTitle("Add ingredient");
-                    final EditText input = new EditText(getContext());
+                    builder.setTitle(getString(R.string.add_ingredient));
+
+                    EditText input = new EditText(getContext());
                     builder.setView(input);
-                    builder.setPositiveButton("Add", (dialog, which) -> ingredients.add(input.getText().toString()));
+                    builder.setPositiveButton(getString(R.string.add), (dialog, which) -> ingredients.add(input.getText().toString()));
                     builder.show();
                 }
                 else //surovina
                 {
                     String word = ingredients.getItem(i);
-                    AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-                    builder.setTitle("Edit ingredient");
-                    final EditText input = new EditText(getContext());
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+                    builder.setTitle(getString(R.string.edit_ingredient));
+                    EditText input = new EditText(getContext());
                     input.setText(word);
                     builder.setView(input);
-                    builder.setPositiveButton("Save", (dialog, which) -> {ingredients.remove(word); ingredients.insert(input.getText().toString(),i);});
-                    builder.setNegativeButton("Delete", (dialog, which) -> ingredients.remove(word));
+                    builder.setPositiveButton(getString(R.string.save), (dialog, which) -> {ingredients.remove(word); ingredients.insert(input.getText().toString(),i);});
+                    builder.setNegativeButton(getString(R.string.delete), (dialog, which) -> ingredients.remove(word));
                     builder.show();
                 }
             }
@@ -121,7 +144,62 @@ public class RecipeFragment extends Fragment
 
         assert getArguments() != null;
         if(getArguments().getBoolean("isNew",false)) onEditMode();
+
+
+        // defense 3
+        image_photo = view.findViewById(R.id.image_photo);
+
+        takePicture();
         return view;
+    } //onCreateView
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater)
+    {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.toolbar_recipe, menu);
+        this.menu = menu;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        if(item.getItemId() == R.id.menu_recipe_converter)
+            onConverterOpen();
+        if(item.getItemId() == R.id.menu_recipe_edit)
+            onEditMode();
+        if(item.getItemId() == R.id.menu_recipe_share)
+            onRecipeShare();
+
+        return true;
+    }
+
+    private void onConverterOpen()
+    {
+        Toast.makeText(getContext(), "converterFragment", Toast.LENGTH_SHORT).show();
+        AlertDialog.Builder dialog = new AlertDialog.Builder(requireContext());
+        dialog.setTitle("Units Converter");
+
+        dialog.setView(R.layout.fragment_converter);
+        dialog.setPositiveButton("Close", (dialog2, which) ->
+        {
+
+        });
+        dialog.show();
+
+        DialogFragment frg = new DialogFragment();
+        //frg.show()
+    }
+
+    private File createImageFile() throws IOException
+    {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = ((MainActivity)getActivity()).getExternalFilesDir((Environment.DIRECTORY_PICTURES));
+        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+        String currentPhotoPath = image.getAbsolutePath();
+        Log.i("daco", currentPhotoPath);
+        return image;
     }
 
     private void onEditMode()
@@ -130,6 +208,8 @@ public class RecipeFragment extends Fragment
         if(editMode)
         {
             button_edit.setImageResource(R.drawable.ic_save);
+            menu.findItem(R.id.menu_recipe_edit).setIcon(ContextCompat.getDrawable(getContext(), R.drawable.ic_save));
+            menu.findItem(R.id.menu_recipe_edit).setIconTintList(null);
 
             text_recipeName.setVisibility(View.INVISIBLE);
             edit_recipeName.setVisibility(View.VISIBLE);
@@ -138,11 +218,13 @@ public class RecipeFragment extends Fragment
             scrollView_edit_recipeText.setVisibility(View.VISIBLE);
 
             list_ingredients.setEnabled(true);
-            list_ingredients.addFooterView(footerView);
+            list_ingredients.addFooterView(footerView_ingredients);
         }
         else //dokonceny edit
         {
             button_edit.setImageResource(R.drawable.ic_edit);
+            menu.findItem(R.id.menu_recipe_edit).setIcon(ContextCompat.getDrawable(getContext(), R.drawable.ic_edit));
+            menu.findItem(R.id.menu_recipe_edit).setIconTintList(null);
 
             text_recipeName.setVisibility(View.VISIBLE);
             edit_recipeName.setVisibility(View.INVISIBLE);
@@ -158,7 +240,7 @@ public class RecipeFragment extends Fragment
             text_recipeText.setText(edit_recipeText.getText().toString());
 
             list_ingredients.setEnabled(false);
-            list_ingredients.removeFooterView(footerView);
+            list_ingredients.removeFooterView(footerView_ingredients);
 
             db.DAO().updateRecipe(rcpt);
         }
@@ -207,5 +289,40 @@ public class RecipeFragment extends Fragment
         sendIntent.putExtra(Intent.EXTRA_TEXT, content);
         sendIntent.setType("text/plain");
         startActivity(sendIntent);
+    }
+
+//    @Override
+//    public void onActivityResult(int rc, int resultCode, Intent data)
+//    {
+//        if(rc == 1 && resultCode == RESULT_OK)
+//        {
+//            Bundle extras = data.getExtras();
+//            Bitmap image = (Bitmap) extras.get("data");
+//            image_photo.setImageBitmap(image);
+//
+//        }
+//    }
+
+    void takePicture()
+    {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if(takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null)
+        {
+            File photoFile = null;
+            try
+            {
+                photoFile = createImageFile();
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            if(photoFile != null)
+            {
+//                Uri photoURI = FileProvider.getUriForFile(requireContext(), "com.martin.reciper.fileprovider", photoFile);
+//                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+//                startActivityForResult(takePictureIntent, 1);
+            }
+        }
     }
 }
