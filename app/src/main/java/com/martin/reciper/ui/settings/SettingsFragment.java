@@ -84,24 +84,25 @@ public class SettingsFragment extends PreferenceFragmentCompat
         pref_fav_volume_unit = findPreference("fav_volume_unit");
 
         setUnitsLists();
-        assert preference_contactDeveloper != null;
+
         preference_contactDeveloper.setOnPreferenceClickListener(preference ->
         {
             ((MainActivity) requireActivity()).onContactDeveloper();
             return true;
         });
-        assert preference_language != null;
         preference_language.setOnPreferenceChangeListener((preference, newValue) ->
         {
             requireActivity().recreate();
             return true;
         });
-        assert preference_version != null;
         preference_version.setOnPreferenceClickListener((preference) ->
         {
             counter++;
             if(counter >= 5)
+            {
                 Toast.makeText(requireContext(), getString(R.string.easter_egg), Toast.LENGTH_LONG).show();
+                counter = Integer.MIN_VALUE;
+            }
             return true;
         });
 
@@ -138,7 +139,7 @@ public class SettingsFragment extends PreferenceFragmentCompat
     {
         settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
-        settings = getActivity().getPreferences(Context.MODE_PRIVATE);
+        settings = requireActivity().getPreferences(Context.MODE_PRIVATE);
 
         tester = view.findViewById(R.id.button_tester);
         tester.setOnClickListener(testerListener);

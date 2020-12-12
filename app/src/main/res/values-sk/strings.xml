@@ -21,7 +21,6 @@
     <string name="ounces">Unce</string>
     <string name="foodname">Názov receptu</string>
     <string name="procedure">Postup:</string>
-    <string name="video">Video:</string>
     <string name="toto_je_prompt" />
     <string name="converter">Prevodník jednotiek</string>
     <string name="title_version">Verzia</string>
@@ -49,4 +48,8 @@
     <string name="delete">Vymazať</string>
     <string name="add_ingredient">Pridať ingredienciu</string>
     <string name="default_portions_ratio">Predvolený počet porcií</string>
+    <string name="media">Médium</string>
+    <string name="media_descriptor">Médium k videu</string>
+    <string name="video">Video</string>
+    <string name="photo">Fotka</string>
 </resources>

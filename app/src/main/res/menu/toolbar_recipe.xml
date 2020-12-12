@@ -4,6 +4,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/menu_recipe_media"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_photo2"
+        android:title="@string/media"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:visible="false"
         android:id="@+id/menu_recipe_converter"
         android:orderInCategory="100"
         android:icon="@drawable/ic_converter"

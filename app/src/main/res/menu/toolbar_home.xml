@@ -17,4 +17,14 @@
         android:title="@string/text_youtube_search"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/menu_home_converter"
+        android:title="@string/title_converter"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_home_settings"
+        android:title="@string/title_settings"
+        app:showAsAction="never" />
+
 </menu>

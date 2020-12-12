@@ -15,7 +15,7 @@
     <string name="procedure">Procedure:</string>
     <string name="my_recipes">My Recipes:</string>
     <string name="title_recipe">Recipe</string>
-    <string name="video">Video:</string>
+    <string name="link" translatable="false">Link:</string>
     <string name="recipe_procedure">Recipe procedure</string>
     <string name="recipe_create">Create a new Recipe</string>
     <string name="edit_ingredient">Edit ingredient</string>
@@ -60,5 +60,9 @@
     <string name="save">Save</string>
     <string name="delete">Delete</string>
     <string name="easter_egg" translatable="false">You found my Easter Egg! 😮♥</string>
+    <string name="media">Media</string>
+    <string name="media_descriptor">Recipe media</string>
+    <string name="video">Video</string>
+    <string name="photo">Photo</string>
 
 </resources>

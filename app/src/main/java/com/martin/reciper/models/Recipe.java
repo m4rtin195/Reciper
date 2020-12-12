@@ -27,8 +27,8 @@ public class Recipe implements Parcelable
     @ColumnInfo(name = "ingredients")
     private ArrayList<String> ingredients;
 
-    @ColumnInfo(name = "videoURL")
-    private String videoURL;
+    @ColumnInfo(name = "mediaURL")
+    private String mediaURL;
 
     public Recipe()
     {
@@ -36,7 +36,7 @@ public class Recipe implements Parcelable
         recipeRating = 0.0f;
         recipeText = "";
         ingredients = new ArrayList<>();
-        videoURL = "";
+        mediaURL = "";
     }
 
     public Recipe(Parcel incoming)
@@ -46,7 +46,7 @@ public class Recipe implements Parcelable
         recipeRating = incoming.readFloat();
         recipeText = incoming.readString();
         ingredients = incoming.createStringArrayList();
-        videoURL = incoming.readString();
+        mediaURL = incoming.readString();
     }
 
     public long getId()
@@ -106,11 +106,11 @@ public class Recipe implements Parcelable
         return this;
     }
 
-    public String getVideoURL() {
-        return videoURL;
+    public String getMediaURL() {
+        return mediaURL;
     }
-    public void setVideoURL(String videoURL) {
-        this.videoURL = videoURL;
+    public void setMediaURL(String mediaURL) {
+        this.mediaURL = mediaURL;
     }
 
     @Override
@@ -126,7 +126,7 @@ public class Recipe implements Parcelable
         outcoming.writeFloat(recipeRating);
         outcoming.writeString(recipeText);
         outcoming.writeStringList(ingredients);
-        outcoming.writeString(videoURL);
+        outcoming.writeString(mediaURL);
     }
 
     public static final Creator<Recipe> CREATOR = new Creator<Recipe>()

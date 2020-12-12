@@ -9,7 +9,8 @@
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
-    tools:context=".ui.converter.ConverterFragment">
+    tools:context=".ui.converter.ConverterFragment"
+    android:animateLayoutChanges="true">
 
     <LinearLayout
         android:layout_width="match_parent"

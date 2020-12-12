@@ -58,8 +58,8 @@ public class ConverterFragment extends Fragment
         setHasOptionsMenu(true);
 
         converterViewModel = new ViewModelProvider(requireActivity()).get(ConverterViewModel.class);
-
         settings = PreferenceManager.getDefaultSharedPreferences(requireContext());
+
         favWeightId = Integer.parseInt(settings.getString("fav_weight_unit", "3"));
         favVolumeId = Integer.parseInt(settings.getString("fav_volume_unit", "3"));
     }

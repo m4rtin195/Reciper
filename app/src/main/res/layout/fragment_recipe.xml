@@ -5,11 +5,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:scrollbars="vertical"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
-    tools:context=".ui.recipe.RecipeFragment">
+    tools:context=".ui.recipe.RecipeFragment"
+    android:animateLayoutChanges="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -17,28 +19,30 @@
 
         <TextView
             android:id="@+id/text_recipeName"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginHorizontal="32dp"
             android:layout_marginTop="8dp"
             android:paddingHorizontal="4dp"
             android:paddingTop="10dp"
             android:textSize="24sp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Recipe name" />
 
         <EditText
             android:id="@+id/edit_recipeName"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginHorizontal="32dp"
             android:layout_marginTop="8dp"
             android:hint="@string/foodname"
             android:importantForAutofill="no"
-            android:inputType="textCapSentences"
+            android:inputType="textMultiLine|textCapSentences"
             android:textSize="24sp"
             android:visibility="invisible"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Recipe name" />
@@ -48,7 +52,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="-80dp"
             android:clickable="false"
             android:isIndicator="true"
             android:scaleX="0.8"
@@ -107,6 +110,7 @@
             android:layout_marginStart="32dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="32dp"
+            android:contentDescription="@string/media_descriptor"
             android:src="@drawable/ic_settings"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -114,20 +118,21 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:baselineAligned="false"
             android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
+
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/web_video">
 
-            <LinearLayout
-                android:layout_width="280dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/layout_ingredients"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.33"
+                android:minWidth="150dp">
 
                 <TextView
                     android:id="@+id/text_ingredients"
@@ -136,12 +141,15 @@
                     android:gravity="center_horizontal"
                     android:paddingVertical="8dp"
                     android:paddingTop="8dp"
-                    android:text="@string/ingredients" />
+                    android:text="@string/ingredients"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <ListView
                     android:id="@+id/list_ingredients"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:clickable="false"
                     android:divider="#FFFFFF"
                     android:focusable="false"
@@ -149,50 +157,52 @@
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="8dp"
                     android:textSize="14sp"
-                    android:visibility="visible" />
+                    android:visibility="visible"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="@+id/text_ingredients"
+                    app:layout_constraintTop_toBottomOf="@+id/text_ingredients" />
 
-            </LinearLayout>
-
-            <ScrollView
-                android:id="@+id/scrollView_text_recipeText"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:paddingEnd="8dp"
-                android:visibility="visible">
-
-                <TextView
-                    android:id="@+id/text_recipeText"
-                    android:layout_width="match_parent"
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab_openConverter"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="8dp"
-                    android:textSize="14sp"
-                    tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas." />
-            </ScrollView>
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginVertical="8dp"
+                    android:contentDescription="@string/converter"
+                    app:backgroundTint="@color/colorPrimary"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/list_ingredients"
+                    app:srcCompat="@drawable/ic_converter"
+                    app:tint="#FFFFFF" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <ScrollView
-                android:id="@+id/scrollView_edit_recipeText"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:paddingEnd="8dp"
-                android:visibility="gone">
+            <TextView
+                android:id="@+id/text_recipeText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.66"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="8dp"
+                android:paddingEnd="20dp"
+                android:textSize="14sp"
+                tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas." />
 
-                <EditText
-                    android:id="@+id/edit_recipeText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/recipe_procedure"
-                    android:importantForAutofill="no"
-                    android:inputType="textMultiLine|text"
-                    android:nestedScrollingEnabled="true"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="8dp"
-                    android:textSize="14sp"
-                    tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas." />
-            </ScrollView>
+            <EditText
+                android:id="@+id/edit_recipeText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.66"
+                android:ems="10"
+                android:hint="@string/recipe_procedure"
+                android:importantForAutofill="no"
+                android:inputType="textMultiLine|text"
+                android:nestedScrollingEnabled="true"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="8dp"
+                android:textSize="14sp"
+                android:visibility="gone"
+                tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis finibus faucibus nunc, vel feugiat quam faucibus vitae. Duis sed nisi vel nisl posuere bibendum eget non quam. Cras tempor diam nec purus sagittis aliquam. Sed nec eleifend sem. Cras pharetra justo in massa placerat, ac ullamcorper lectus egestas." />
 
         </LinearLayout>
 

@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:layout_weight="1"
     android:orientation="horizontal"
-    tools:ignore="RtlSymmetry, RtlCompat">
+    tools:ignore="RtlSymmetry">
 
     <TextView
         android:id="@+id/text_recipeName"
@@ -40,5 +40,6 @@
         android:paddingStart="0dp"
         android:textAlignment="center"
         android:textSize="18sp" />
+        <!--todo fix alignment-->
 
 </LinearLayout>

@@ -1,5 +1,6 @@
 package com.martin.reciper;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipDescription;
@@ -72,11 +73,11 @@ public class MainActivity extends AppCompatActivity
         navController.addOnDestinationChangedListener(onDestinationChangedListener);
 
         //Passing each menu ID as a set of Ids because each menu should be considered as top level destinations.
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_home, R.id.navigation_converter, R.id.navigation_settings).build();
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_home).build();
 
         //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration); //ActionBar setup
         NavigationUI.setupWithNavController(navbar, navController); //Navbar setup
-        NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration); //Toolbar setup
+        NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration); //Toolbar setup //prepisovanie title
 
         final View activityRootView = getWindow().getDecorView().findViewById(android.R.id.content);
         activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener); //keyboard listener
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-/*        Log.i("daco", "onStart()");
+/*      Log.i("daco", "onStart()");
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         //HomeFragment hf = (HomeFragment) navHostFragment.getChildFragmentManager().findFragmentById(R.id.fragment_home);
         HomeFragment hf = (HomeFragment) navHostFragment.getChildFragmentManager().getFragments().get(0);
@@ -120,6 +121,8 @@ public class MainActivity extends AppCompatActivity
         super.applyOverrideConfiguration(updateConfigurationLanguage(newConfig));
     }
 
+    @SuppressLint("ObsoleteSdkInt")
+    @SuppressWarnings("ConstantConditions")
     private Configuration updateConfigurationLanguage(Configuration config)
     {
         if (Build.VERSION.SDK_INT >= 24)
@@ -157,7 +160,7 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("deprecation") //progress dialog
     protected void resolveIntent(Intent intent)
     {
-        AtomicReference<String> videoURL = new AtomicReference<>(new String());
+        AtomicReference<String> mediaURL = new AtomicReference<>(new String());
         AtomicReference<String> videoTitle = new AtomicReference<>(new String());
 
         ClipData clipData = intent.getClipData();
@@ -168,8 +171,8 @@ public class MainActivity extends AppCompatActivity
                 String content = intent.getClipData().getItemAt(0).getText().toString();
                 if(content.contains("https://youtu.be/") || content.contains("https://www.youtube.com/watch"))
                 {
-                    videoURL.set(content);
-                    Log.i("daco", "content resolved: " + videoURL);
+                    mediaURL.set(content);
+                    Log.i("daco", "content resolved: " + mediaURL);
                 }
                 else //not youtube url
                 {
@@ -204,7 +207,7 @@ public class MainActivity extends AppCompatActivity
             BufferedReader reader = null;
             try
             {
-                URL url = new URL("https://www.youtube.com/oembed?url=" + videoURL.get() + "&format=json");
+                URL url = new URL("https://www.youtube.com/oembed?url=" + mediaURL.get() + "&format=json");
                 connection = (HttpsURLConnection) url.openConnection();
                 connection.connect();
 
@@ -252,7 +255,7 @@ public class MainActivity extends AppCompatActivity
             HomeFragment hf = (HomeFragment) navHostFragment.getChildFragmentManager().getFragments().get(0);
             Log.i("daco", "mam instanciu");
             if(hf != null)
-                hf.onNewRecipe(videoTitle.get(), videoURL.get());
+                hf.onNewRecipe(videoTitle.get(), mediaURL.get());
         }
         catch(Exception e)
         {
@@ -312,7 +315,7 @@ public class MainActivity extends AppCompatActivity
             }
             else if(isOpened)   //just closed
             {
-                navbar.setVisibility(View.VISIBLE);
+                //navbar.setVisibility(View.VISIBLE);
                 isOpened = false;
             }
         }
@@ -324,7 +327,6 @@ public class MainActivity extends AppCompatActivity
         public void onDestinationChanged(@NonNull NavController controller, @NonNull NavDestination destination, @Nullable Bundle arguments)
         {
             //Toast.makeText(MainActivity.this, "navigation event", Toast.LENGTH_SHORT).show();
-            //todo find home fragment and call remove search button
         }
     };
 }

@@ -11,12 +11,18 @@
         android:label="@string/app_name"
         tools:layout="@layout/fragment_home" >
         <action
-            android:id="@+id/action_navigation_home_to_fragment_recipe"
+            android:id="@+id/action_navigation_home_to_recipe"
             app:destination="@id/navigation_recipe"
             app:enterAnim="@android:anim/slide_in_left"
             app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_navigation_home_to_settings"
+            app:destination="@id/navigation_settings" />
+        <action
+            android:id="@+id/action_navigation_home_to_converter"
+            app:destination="@id/navigation_converter" />
     </fragment>
 
     <fragment
@@ -29,7 +35,7 @@
         android:id="@+id/navigation_settings"
         android:name="com.martin.reciper.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
-        tools:layout="@layout/fragment_settings" >
+        tools:layout="@xml/settings" >
         <action
             android:id="@+id/action_navigation_settings_self"
             app:destination="@id/navigation_settings" />
@@ -52,5 +58,8 @@
             app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popExitAnim="@android:anim/slide_out_right" />
+        <action
+            android:id="@+id/action_navigation_recipe_to_navigation_converter"
+            app:destination="@id/navigation_converter" />
     </fragment>
 </navigation>

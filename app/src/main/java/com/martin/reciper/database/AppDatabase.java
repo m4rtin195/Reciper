@@ -6,7 +6,7 @@ import androidx.room.TypeConverters;
 
 import com.martin.reciper.models.Recipe;
 
-@Database(entities = {Recipe.class}, version = 2)
+@Database(entities = {Recipe.class}, version = 3)
 @TypeConverters({dbConverters.class})
 public abstract class AppDatabase extends RoomDatabase
 {

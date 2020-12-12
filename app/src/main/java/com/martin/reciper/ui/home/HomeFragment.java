@@ -17,7 +17,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.appcompat.widget.SearchView;
 
@@ -63,35 +62,37 @@ public class HomeFragment extends Fragment
     {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        //homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        settings = PreferenceManager.getDefaultSharedPreferences(requireContext());
+
+        youtubeVisible = settings.getBoolean("youtube_enabled", true);
     }
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState)
     {
-        //homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         final View view = inflater.inflate(R.layout.fragment_home, container, false);
-        settings = PreferenceManager.getDefaultSharedPreferences(requireContext());
         toolbar = requireActivity().findViewById(R.id.toolbar);
         navController = NavHostFragment.findNavController(this);
 
-        edit_ytQuery = view.findViewById(R.id.edit_query);
-        button_search = view.findViewById(R.id.button_search);
-        //search_filter = view.findViewById(R.id.search_filter);
-        list_recipes = view.findViewById(R.id.list_recipes);
-        fab_addNew = view.findViewById(R.id.fab_addNew);
         group_youtube = view.findViewById(R.id.group_youtube);
+            group_youtube.setVisibility(youtubeVisible ? View.VISIBLE : View.GONE);
+        edit_ytQuery = view.findViewById(R.id.edit_query);
+            edit_ytQuery.setOnEditorActionListener(onYtQueryEditorActionListener);
+        button_search = view.findViewById(R.id.button_search);
+            button_search.setOnClickListener(view1 -> onYoutubeSearch());
 
-        recipesAdapter = new RecipesAdapter(getActivity(), (ArrayList<Recipe>) db.DAO().getAllRecipes());
-        list_recipes.setAdapter(recipesAdapter);
+        list_recipes = view.findViewById(R.id.list_recipes);
+            recipesAdapter = new RecipesAdapter(getActivity(), (ArrayList<Recipe>) db.DAO().getAllRecipes());
+            list_recipes.setAdapter(recipesAdapter);
+
+        fab_addNew = view.findViewById(R.id.fab_addNew);
+            fab_addNew.setOnClickListener(view1 -> onNewRecipe());
+
+        //search_filter = view.findViewById(R.id.search_filter);
+
         //View footerView =  inflater.inflate(R.layout.row_footer, list_recipes, false); list_recipes.addFooterView(footerView);
-
-        youtubeVisible = settings.getBoolean("youtube_enabled", true);
-        group_youtube.setVisibility(youtubeVisible ? View.VISIBLE : View.GONE);
-
-        edit_ytQuery.setOnEditorActionListener(onYtQueryEditorActionListener);
-        button_search.setOnClickListener(view1 -> onYoutubeSearch());
-
-        fab_addNew.setOnClickListener(view1 -> onNewRecipe());
 
         return view;
     } //onCreateView
@@ -135,6 +136,11 @@ public class HomeFragment extends Fragment
             youtubeVisible = !youtubeVisible;
             group_youtube.setVisibility(youtubeVisible ? View.VISIBLE : View.GONE);
         }
+        if(item.getItemId() == R.id.menu_home_converter)
+            navController.navigate(R.id.action_navigation_home_to_converter);
+        if(item.getItemId() == R.id.menu_home_settings)
+            navController.navigate(R.id.action_navigation_home_to_settings);
+
         return true;
     }
 
@@ -159,7 +165,7 @@ public class HomeFragment extends Fragment
         onNewRecipe(new String(), new String());
     }
 
-    public void onNewRecipe(String name, String videoURL)
+    public void onNewRecipe(String name, String mediaURL)
     {
         View content = getLayoutInflater().inflate(R.layout.dialog_recipe,null);
         EditText input = content.findViewById(R.id.editbox);
@@ -174,14 +180,14 @@ public class HomeFragment extends Fragment
             Recipe rcpt = new Recipe();
             //TODO check that is not empty
             rcpt.setRecipeName(input.getText().toString());
-            rcpt.setVideoURL(videoURL);
+            rcpt.setMediaURL(mediaURL);
             recipesAdapter.add(rcpt);
             recipesAdapter.notifyDataSetChanged();
             db.DAO().insert(rcpt);
             Bundle bundle = new Bundle();
             bundle.putParcelable("recipe", rcpt);
             bundle.putBoolean("isNew", true);
-            navController.navigate(R.id.action_navigation_home_to_fragment_recipe, bundle);
+            navController.navigate(R.id.action_navigation_home_to_recipe, bundle);
         });
         dialog.show();
     }
@@ -204,7 +210,7 @@ public class HomeFragment extends Fragment
         {
             Bundle bundle = new Bundle();
             bundle.putParcelable("recipe", recipesAdapter.getItem(i));
-            navController.navigate(R.id.action_navigation_home_to_fragment_recipe, bundle);
+            navController.navigate(R.id.action_navigation_home_to_recipe, bundle);
         }
     };
 
