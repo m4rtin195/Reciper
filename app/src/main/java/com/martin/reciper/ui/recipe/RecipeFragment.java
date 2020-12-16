@@ -2,10 +2,9 @@ package com.martin.reciper.ui.recipe;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,14 +19,16 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.MediaController;
 import android.widget.RatingBar;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
@@ -37,7 +38,6 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.martin.reciper.AppActivity;
-import com.martin.reciper.MainActivity;
 import com.martin.reciper.R;
 import com.martin.reciper.adapters.IngredientAdapter;
 import com.martin.reciper.database.AppDatabase;
@@ -45,9 +45,6 @@ import com.martin.reciper.models.Recipe;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -64,16 +61,18 @@ public class RecipeFragment extends Fragment
     RatingBar rating_recipeRating;
     ListView list_ingredients;
     View footerView_ingredients;
-    ScrollView scrollView_text_recipeText, scrollView_edit_recipeText;
-    WebView web_video;
+
+    ConstraintLayout layout_media;
     ImageView image_media;
+    VideoView video_media;
+    WebView web_video;
     FloatingActionButton fab_converter;
 
     MenuItem menu_editIcon;
     MenuItem menu_mediaIcon;
 
     boolean editMode = false;
-    String tempURI; //todo cast to Uri
+    Uri tempURI;
 
     static final int CAPTURE_PHOTO = 1;
     static final int CAPTURE_VIDEO = 2;
@@ -102,19 +101,23 @@ public class RecipeFragment extends Fragment
             text_recipeName.setText(rcpt.getRecipeName());
         edit_recipeName = view.findViewById(R.id.edit_recipeName);
             edit_recipeName.setText(rcpt.getRecipeName());
-        text_recipeText = view.findViewById(R.id.text_recipeText);
-            text_recipeText.setText(rcpt.getRecipeText());
-        edit_recipeText = view.findViewById(R.id.edit_recipeText);
-            edit_recipeText.setText(rcpt.getRecipeText());
         rating_recipeRating = view.findViewById(R.id.rating_recipeRating);
             rating_recipeRating.setRating(rcpt.getRecipeRating());
+
+        layout_media = view.findViewById(R.id.layout_media);
+        image_media = view.findViewById(R.id.image_media);
+        video_media = view.findViewById(R.id.video_media);
         web_video = view.findViewById(R.id.web_video);
-        image_media = view.findViewById(R.id.image_photo);
+
         list_ingredients = view.findViewById(R.id.list_ingredients);
             list_ingredients.setAdapter(ingredients = new IngredientAdapter(getActivity(), rcpt.getIngredients()));
             list_ingredients.setOnItemClickListener(onListIngredietnsItemClickListener);
             list_ingredients.invalidate(); //todo prekresli layout
             footerView_ingredients =  inflater.inflate(R.layout.row_footer, null, false);
+        text_recipeText = view.findViewById(R.id.text_recipeText);
+            text_recipeText.setText(rcpt.getRecipeText());
+        edit_recipeText = view.findViewById(R.id.edit_recipeText);
+            edit_recipeText.setText(rcpt.getRecipeText());
 
         fab_converter = view.findViewById(R.id.fab_openConverter);
             fab_converter.setOnClickListener(view1 -> onConverterOpen());
@@ -123,13 +126,6 @@ public class RecipeFragment extends Fragment
 
         return view;
     } //onCreateView
-
-    @Override
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState)
-    {
-        if(getArguments() != null)
-            if(getArguments().getBoolean("isNew",false)) onEditMode();
-    }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater)
@@ -142,6 +138,13 @@ public class RecipeFragment extends Fragment
             menu_mediaIcon.setEnabled(false);
         menu_editIcon = menu.findItem(R.id.menu_recipe_edit);
             menu_editIcon.setIconTintList(null);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu)
+    {
+        if(getArguments() != null)
+            if(getArguments().getBoolean("isNew",false)) onEditMode();
     }
 
     @Override
@@ -161,13 +164,59 @@ public class RecipeFragment extends Fragment
 
     private void loadMedia()
     {
-        web_video.getSettings().setJavaScriptEnabled(true); //todo try disable
-        web_video.setWebChromeClient(new WebChromeClient());
-        int n = rcpt.getMediaURL().lastIndexOf('/');
-        String videoID = rcpt.getMediaURL().substring(n+1);
-        String iframe = "<iframe width=\"311\" height=\"166\" src=\"https://www.youtube.com/embed/" + videoID + "\" frameborder=\"0\" allowfullscreen></iframe>";
-        web_video.loadData(iframe, "text/html", "utf-8");
-        web_video.setForeground(null);
+        image_media.setVisibility(View.GONE);
+        video_media.setVisibility(View.GONE);
+        web_video.setVisibility(View.GONE);
+
+        if(rcpt.getMediaURI().isEmpty()) return;
+
+        Uri mediaURI = Uri.parse(rcpt.getMediaURI());
+        switch(mediaURI.getScheme())
+        {
+            case "content":  //local image or video
+            {
+                if(mediaURI.getLastPathSegment().endsWith(".jpg"))  //local image
+                {
+                    image_media.setVisibility(View.VISIBLE);
+                    image_media.setImageURI(mediaURI);
+                    break;
+                }
+                if(mediaURI.getLastPathSegment().endsWith(".mp4"))  //local video
+                {
+                    video_media.setVisibility(View.VISIBLE);
+                    video_media.setVideoURI(mediaURI);
+                    video_media.setMediaController(new MediaController(requireContext()));
+                    video_media.setAudioFocusRequest(AudioManager.AUDIOFOCUS_GAIN);
+                    video_media.seekTo(1);
+                    video_media.requestFocus();
+                    break;
+                }
+                Toast.makeText(getContext(), "Unknown local media", Toast.LENGTH_SHORT).show();
+                break;
+            }
+            case "http":
+            case "https":
+            {
+                if(mediaURI.getAuthority().contains("youtu.be") || mediaURI.getAuthority().contains("youtube.com"))
+                {
+                    web_video.setVisibility(View.VISIBLE);
+                    web_video.getSettings().setJavaScriptEnabled(true);
+                    web_video.setWebChromeClient(new WebChromeClient());
+                    int n = rcpt.getMediaURI().lastIndexOf('/');
+                    String videoID = rcpt.getMediaURI().substring(n+1);
+                    String iframe = "<iframe width=\"311\" height=\"166\" src=\"https://www.youtube.com/embed/" + videoID + "\" frameborder=\"0\" allowfullscreen></iframe>";
+                    web_video.loadData(iframe, "text/html", "utf-8");
+                    web_video.setForeground(null);
+                }
+                else    //page, try to resolve image
+                {
+                    ;
+                }
+                break;
+            }
+            default:
+                Toast.makeText(getContext(), "Unknown media", Toast.LENGTH_SHORT).show();
+        }
     }
 
     void captureMedia(int action)
@@ -177,7 +226,7 @@ public class RecipeFragment extends Fragment
 
         switch(action)
         {
-            case CAPTURE_PHOTO: {intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE); suffix = ".jpg"; break;}
+            case CAPTURE_PHOTO: {intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE); suffix = ".jpg"; break;}
             case CAPTURE_VIDEO: {intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE); suffix = ".mp4"; break;}
             default: return;
         }
@@ -205,7 +254,7 @@ public class RecipeFragment extends Fragment
         {
             File file = File.createTempFile(fileName, suffix, storageDir);
             fileURI = FileProvider.getUriForFile(requireContext(), "com.martin.reciper.fileprovider", file);
-            tempURI = fileURI.toString();
+            tempURI = fileURI;
         }
         catch(IOException e) {e.printStackTrace();}
 
@@ -219,44 +268,39 @@ public class RecipeFragment extends Fragment
         {
             if(resultCode == RESULT_OK)
             {
-                rcpt.setMediaURL(tempURI);
-                image_media.setImageURI(Uri.parse(tempURI));
+                rcpt.setMediaURI(tempURI.toString());
+                image_media.setImageURI(Uri.parse(tempURI.toString()));
             }
             else
                 Toast.makeText(getContext(), "Failed to capture media, " + resultCode, Toast.LENGTH_SHORT).show();
 
-            tempURI = new String();
+            tempURI = null;
             loadMedia();
         }
     }
 
     private void onMediaChange()
     {
-        String url = rcpt.getMediaURL();
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
-        builder.setTitle(getString(R.string.media_descriptor));
+        String url = rcpt.getMediaURI();
         EditText input = new EditText(getContext());
         input.setText(url);
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+        builder.setTitle(getString(R.string.media_descriptor));
         builder.setView(input);
         builder.setNegativeButton(getString(R.string.photo), (dialog, which) -> captureMedia(CAPTURE_PHOTO));
         builder.setPositiveButton(getString(R.string.video), (dialog, which) -> captureMedia(CAPTURE_VIDEO));
-        builder.setNeutralButton(getString(R.string.save), (dialog, which) -> rcpt.setMediaURL(input.getText().toString()));
+        builder.setNeutralButton(getString(R.string.save), (dialog, which) -> rcpt.setMediaURI(input.getText().toString()));
         builder.show();
     }
 
     private void onConverterOpen()
     {
-        Toast.makeText(getContext(), "converterFragment", Toast.LENGTH_SHORT).show();
         AlertDialog.Builder dialog = new AlertDialog.Builder(requireContext());
-        dialog.setTitle("Units Converter");
-
+        dialog.setTitle(getString(R.string.converter));
         dialog.setView(R.layout.fragment_converter);
-        dialog.setPositiveButton("Close", (dialog2, which) ->
-        {
-            ;
-        });
+        dialog.setNegativeButton("Close", (dialog2, which) -> {});
         dialog.show();
-
         DialogFragment frg = new DialogFragment();
         //frg.show()
     }
@@ -281,7 +325,6 @@ public class RecipeFragment extends Fragment
         else //dokonceny edit
         {
             menu_editIcon.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_edit));
-            //menu.findItem(R.id.menu_recipe_edit).setIconTintList(null);
             menu_mediaIcon.setEnabled(false);
 
             text_recipeName.setVisibility(View.VISIBLE);
@@ -306,37 +349,36 @@ public class RecipeFragment extends Fragment
 
     private void onRecipeShare()
     {
-        Log.i("daco", "som v share");
-        String content = "";
+        StringBuilder content = new StringBuilder();
         String newline = "\n";
 
         // name
-        content += rcpt.getRecipeName() + newline;
+        content.append(rcpt.getRecipeName()).append(newline);
         // stars
-        for(int i=0; i<rcpt.getRecipeRating(); i++)
-            content += '★';
-        if(rcpt.getRecipeRating()%1 != 0)   //TODO check this
-            content += '/';
+        for(int i=0; i<Math.floor(rcpt.getRecipeRating()); i++)
+            content.append('★');
+        if(rcpt.getRecipeRating()%1 != 0)
+            content.append('/');
         for(int i=5; i>Math.ceil(rcpt.getRecipeRating()); i--)
-            content += '☆';
-        content += newline + newline;
+            content.append('☆');
+        content.append(newline).append(newline);
         // ingredients
-        content += "✓ " + getResources().getString(R.string.ingredients) + newline;
+        content.append("✓ ").append(getResources().getString(R.string.ingredients)).append(newline);
         for(String ingr : rcpt.getIngredients())
-            content +=  "• " + ingr + newline;
-        content += newline;
+            content.append("• ").append(ingr).append(newline);
+        content.append(newline);
         // procedure
-        content += "✓ " + getResources().getString(R.string.procedure) + newline;
-        content += rcpt.getRecipeText() + newline + newline;
+        content.append("✓ ").append(getResources().getString(R.string.procedure)).append(newline);
+        content.append(rcpt.getRecipeText()).append(newline).append(newline);
         // video
-        if(!rcpt.getMediaURL().isEmpty())
-            content += "✓ " + getResources().getString(R.string.link) + newline + rcpt.getMediaURL() + newline;
+        if(!rcpt.getMediaURI().isEmpty())
+            content.append("✓ ").append(getResources().getString(R.string.link)).append(newline).append(rcpt.getMediaURI()).append(newline);
         // footer
-        content += newline + "(Shared from Reciper app \u2764)";
+        content.append(newline).append("(Shared from Reciper app \u2764)");
 
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, content);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, content.toString());
         sendIntent.setType("text/plain");
         startActivity(sendIntent);
     }

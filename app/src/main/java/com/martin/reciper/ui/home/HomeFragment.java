@@ -3,6 +3,7 @@ package com.martin.reciper.ui.home;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -48,7 +49,7 @@ public class HomeFragment extends Fragment
     NavController navController;
     RecipesAdapter recipesAdapter;
 
-    EditText edit_ytQuery; //todo on enter listener
+    EditText edit_ytQuery;
     SearchView search_filter;
     Button button_search;
     ListView list_recipes;
@@ -162,10 +163,10 @@ public class HomeFragment extends Fragment
 
     public void onNewRecipe()
     {
-        onNewRecipe(new String(), new String());
+        onNewRecipe(new String(), null);
     }
 
-    public void onNewRecipe(String name, String mediaURL)
+    public void onNewRecipe(String name, Uri mediaURI)
     {
         View content = getLayoutInflater().inflate(R.layout.dialog_recipe,null);
         EditText input = content.findViewById(R.id.editbox);
@@ -180,10 +181,14 @@ public class HomeFragment extends Fragment
             Recipe rcpt = new Recipe();
             //TODO check that is not empty
             rcpt.setRecipeName(input.getText().toString());
-            rcpt.setMediaURL(mediaURL);
+            if(mediaURI != null)
+                rcpt.setMediaURI(mediaURI.toString());
+
             recipesAdapter.add(rcpt);
             recipesAdapter.notifyDataSetChanged();
-            db.DAO().insert(rcpt);
+            long id = db.DAO().insert(rcpt);
+            rcpt.setId(id);
+
             Bundle bundle = new Bundle();
             bundle.putParcelable("recipe", rcpt);
             bundle.putBoolean("isNew", true);

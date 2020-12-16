@@ -1,5 +1,6 @@
 package com.martin.reciper.database;
 
+import androidx.annotation.Nullable;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -14,7 +15,7 @@ import java.util.List;
 public interface dbDAO
 {
     @Insert
-    void insert(Recipe recipe);
+    long insert(Recipe recipe);
 
     @Query("DELETE FROM Recipe")
     void deleteAll();

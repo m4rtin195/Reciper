@@ -1,6 +1,7 @@
 package com.martin.reciper.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 public class RecipesAdapter extends ArrayAdapter<Recipe> implements Filterable
 {
     private ArrayList<Recipe> array;
-    private ArrayList<Recipe> originalArray;
+    private final ArrayList<Recipe> originalArray;
 
     public RecipesAdapter(Context context, ArrayList<Recipe> array)
     {
@@ -69,6 +70,7 @@ public class RecipesAdapter extends ArrayAdapter<Recipe> implements Filterable
 
     public Filter getFilter()
     {
+        //noinspection UnnecessaryLocalVariable
         Filter filter = new Filter()
         {
             @Override
@@ -95,13 +97,9 @@ public class RecipesAdapter extends ArrayAdapter<Recipe> implements Filterable
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results)
             {
-                if(results.count == 0)
-                    notifyDataSetInvalidated();
-                else
-                {
-                    array = (ArrayList<Recipe>) results.values;
-                    notifyDataSetChanged();
-                }
+                //if(results.count == 0) notifyDataSetInvalidated();
+                array = (ArrayList<Recipe>) results.values;
+                notifyDataSetChanged();
             }
         };
         return filter;

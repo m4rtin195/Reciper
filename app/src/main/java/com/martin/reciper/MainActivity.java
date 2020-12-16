@@ -9,9 +9,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.LocaleList;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -35,7 +37,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -61,8 +67,8 @@ public class MainActivity extends AppCompatActivity
         settings = PreferenceManager.getDefaultSharedPreferences(this);
 
         Log.i("daco", "--------------------------------------");
-        LocaleList current = getResources().getConfiguration().getLocales();
-        Log.i("daco", "current locale: " + current.toString());
+        //LocaleList current = getResources().getConfiguration().getLocales();
+        //Log.i("daco", "current locale: " + current.toString());
 
         navbar = findViewById(R.id.navbar);
         toolbar = findViewById(R.id.toolbar);
@@ -89,7 +95,7 @@ public class MainActivity extends AppCompatActivity
     {
         super.onStart();
         Intent intent = getIntent();
-        if(intent!=null)
+        if(intent.getAction() != null)
         {
             if (intent.getAction().equals(Intent.ACTION_SEND))
             {
@@ -160,37 +166,40 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("deprecation") //progress dialog
     protected void resolveIntent(Intent intent)
     {
-        AtomicReference<String> mediaURL = new AtomicReference<>(new String());
-        AtomicReference<String> videoTitle = new AtomicReference<>(new String());
+        //Log.i("daco", "global: " + intent.getStringExtra(Intent.EXTRA_TEXT));
+
+        AtomicReference<Uri> AmediaURI = new AtomicReference<>();
+        AtomicReference<String> AvideoTitle = new AtomicReference<>(new String());
 
         ClipData clipData = intent.getClipData();
-        if(clipData.getItemCount() > 0)
+        if(intent.getStringExtra(Intent.EXTRA_TEXT) != null)
         {
-            if(clipData.getDescription().getMimeType(0).equals(ClipDescription.MIMETYPE_TEXT_PLAIN))
-            {
-                String content = intent.getClipData().getItemAt(0).getText().toString();
-                if(content.contains("https://youtu.be/") || content.contains("https://www.youtube.com/watch"))
+                Uri content = Uri.parse(intent.getStringExtra(Intent.EXTRA_TEXT));
+                content.normalizeScheme();
+                if(content.getAuthority() != null) // is URL
                 {
-                    mediaURL.set(content);
-                    Log.i("daco", "content resolved: " + mediaURL);
+                    if (content.getAuthority().contains("youtu.be") || content.getAuthority().contains("youtube.com"))
+                    {
+                        AmediaURI.set(content);
+                        Log.i("daco", "content resolved: " + AmediaURI);
+                    }
+                    else //not youtube url
+                    {
+                        AmediaURI.set(content);
+                        //Toast.makeText(this, "Content doesn't contains YouTube video URL", Toast.LENGTH_SHORT).show();
+                        Log.i("daco", "not-youtube resolved: " + AmediaURI);
+                    }
                 }
-                else //not youtube url
+                else
                 {
-                    Toast.makeText(this, "Content doesn't contains YouTube video URL", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Not URL, text content", Toast.LENGTH_LONG).show();
                     return;
                 }
-            }
-            else //not text-plain
-            {
-                Log.i("daco", "Wrong content");
-                Toast.makeText(this, "Unknown intent mime-type", Toast.LENGTH_LONG).show();
-                return;
-            }
         }
-        else //empty clipdata
+        else //empty extra text
         {
             Log.i("daco", "Wrong content");
-            Toast.makeText(this, "Empty intent clip content", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Empty extra text content", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -207,7 +216,7 @@ public class MainActivity extends AppCompatActivity
             BufferedReader reader = null;
             try
             {
-                URL url = new URL("https://www.youtube.com/oembed?url=" + mediaURL.get() + "&format=json");
+                URL url = new URL("https://www.youtube.com/oembed?url=" + AmediaURI.get() + "&format=json");
                 connection = (HttpsURLConnection) url.openConnection();
                 connection.connect();
 
@@ -219,7 +228,7 @@ public class MainActivity extends AppCompatActivity
 
                 JSONObject json = new JSONObject(stringBuilder.toString());
 
-                videoTitle.set(json.getString("title"));
+                AvideoTitle.set(json.getString("title"));
             }
             catch (MalformedURLException e)
             {
@@ -244,9 +253,9 @@ public class MainActivity extends AppCompatActivity
         thr.start();
         try {thr.join();} catch(InterruptedException e) {e.printStackTrace();}
 
-        dialog.dismiss(); //??
+        //dialog.dismiss(); // ??
 
-        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment); //aky ma toto zmysel? O.o
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         try
         {
             //TODO ziskat korektnou cestou
@@ -255,7 +264,7 @@ public class MainActivity extends AppCompatActivity
             HomeFragment hf = (HomeFragment) navHostFragment.getChildFragmentManager().getFragments().get(0);
             Log.i("daco", "mam instanciu");
             if(hf != null)
-                hf.onNewRecipe(videoTitle.get(), mediaURL.get());
+                hf.onNewRecipe(AvideoTitle.get(), AmediaURI.get());
         }
         catch(Exception e)
         {
