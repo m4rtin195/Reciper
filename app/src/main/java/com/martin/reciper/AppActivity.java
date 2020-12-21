@@ -1,12 +1,17 @@
 package com.martin.reciper;
 
 import android.app.Application;
+import android.net.Uri;
+import android.util.Log;
 
 import androidx.room.Room;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.martin.reciper.database.AppDatabase;
+
+import java.io.File;
+import java.io.IOException;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -51,13 +56,37 @@ public class AppActivity extends Application
     public void onCreate()
     {
         super.onCreate();
-        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "Reciper_db").allowMainThreadQueries().addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build();
+
+        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "Reciper_db")
+                .allowMainThreadQueries()
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                //.fallbackToDestructiveMigration()
+                .build();
 
         retrofit = new Retrofit.Builder()
                 .baseUrl("http://jsonplaceholder.typicode.com/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
+
+    public boolean repopulateDatabase(File file) //todo move to AppDatabase.java
+    {
+        if(file == null) {Log.e("daco", "db file null"); return false;}
+        if(!file.exists()) {Log.e("daco", "empty db file"); return false;}
+
+        Log.w("daco","going to repopulate!!!");
+        /*db = null;
+        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "Reciper_db")
+                .createFromFile(file)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .build();
+
+        Log.i("daco", "populated database");
+        return true;*/
+        return false;
+    }
+
+    public void deletedb(){Log.i("daco", "deleting db"); db=null;}
 
     public static AppDatabase getDatabase() {return db;}
     public static Retrofit getRetrofit() {return retrofit;}

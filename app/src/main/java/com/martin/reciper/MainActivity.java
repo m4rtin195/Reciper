@@ -2,23 +2,26 @@ package com.martin.reciper;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.ClipDescription;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.LocaleList;
-import android.os.ParcelFileDescriptor;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
+import com.google.android.gms.common.util.IOUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.martin.reciper.ui.home.HomeFragment;
 
@@ -26,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.fragment.NavHostFragment;
@@ -35,25 +39,38 @@ import androidx.preference.PreferenceManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity
 {
+    AppActivity appActivity;
+
     SharedPreferences settings;
     BottomNavigationView navbar;
     Toolbar toolbar;
@@ -61,9 +78,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        appActivity = new AppActivity();
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         settings = PreferenceManager.getDefaultSharedPreferences(this);
 
         Log.i("daco", "--------------------------------------");
@@ -87,15 +106,14 @@ public class MainActivity extends AppCompatActivity
 
         final View activityRootView = getWindow().getDecorView().findViewById(android.R.id.content);
         activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener); //keyboard listener
-
     }
 
     @Override
-    public void onStart()
+    public void onResume()
     {
-        super.onStart();
+        super.onResume();
         Intent intent = getIntent();
-        if(intent.getAction() != null)
+        if (intent.getAction() != null)
         {
             if (intent.getAction().equals(Intent.ACTION_SEND))
             {
@@ -163,31 +181,34 @@ public class MainActivity extends AppCompatActivity
         return new Locale(language, country);
     }
 
-    @SuppressWarnings("deprecation") //progress dialog
     protected void resolveIntent(Intent intent)
     {
         //Log.i("daco", "global: " + intent.getStringExtra(Intent.EXTRA_TEXT));
 
-        AtomicReference<Uri> AmediaURI = new AtomicReference<>();
-        AtomicReference<String> AvideoTitle = new AtomicReference<>(new String());
+        Uri resolvedURI = null;
+        String resolvedTitle = new String();
 
-        ClipData clipData = intent.getClipData();
         if(intent.getStringExtra(Intent.EXTRA_TEXT) != null)
         {
-                Uri content = Uri.parse(intent.getStringExtra(Intent.EXTRA_TEXT));
-                content.normalizeScheme();
-                if(content.getAuthority() != null) // is URL
+                Uri contentURI = Uri.parse(intent.getStringExtra(Intent.EXTRA_TEXT));
+                contentURI.normalizeScheme();
+                if(contentURI.getAuthority() != null) // is URL
                 {
-                    if (content.getAuthority().contains("youtu.be") || content.getAuthority().contains("youtube.com"))
+                    if (contentURI.getAuthority().contains("youtu.be") || contentURI.getAuthority().contains("youtube.com"))
                     {
-                        AmediaURI.set(content);
-                        Log.i("daco", "content resolved: " + AmediaURI);
+                        resolvedURI = contentURI;
+                        resolvedTitle = resolveYoutubeTitle(resolvedURI);
+
+                        Log.i("daco", "content resolved: " + resolvedURI);
                     }
                     else //not youtube url
                     {
-                        AmediaURI.set(content);
-                        //Toast.makeText(this, "Content doesn't contains YouTube video URL", Toast.LENGTH_SHORT).show();
-                        Log.i("daco", "not-youtube resolved: " + AmediaURI);
+                        HashMap<String, String> webPageResolved = resolveWebpage(contentURI);
+
+                        resolvedTitle = webPageResolved.get("title");
+                        resolvedURI = Uri.parse(webPageResolved.get("imageUri"));
+
+                        Log.i("daco", "not-youtube resolved: " + resolvedURI);
                     }
                 }
                 else
@@ -203,57 +224,8 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        ///// have URL, get Title
 
-        ProgressDialog dialog;
-        dialog = new ProgressDialog(this);
-        dialog.setMessage("Fetching data. Please wait...");
-        dialog.show();
-
-        Thread thr = new Thread(() ->
-        {
-            HttpsURLConnection connection = null;
-            BufferedReader reader = null;
-            try
-            {
-                URL url = new URL("https://www.youtube.com/oembed?url=" + AmediaURI.get() + "&format=json");
-                connection = (HttpsURLConnection) url.openConnection();
-                connection.connect();
-
-                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuilder stringBuilder = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null)
-                    stringBuilder.append(line);
-
-                JSONObject json = new JSONObject(stringBuilder.toString());
-
-                AvideoTitle.set(json.getString("title"));
-            }
-            catch (MalformedURLException e)
-            {
-                e.printStackTrace();
-                Log.w("daco", "nespravna URL");
-            }
-            catch (IOException | JSONException e)
-            {
-                e.printStackTrace();
-            } finally
-            {
-                if (connection != null)
-                    connection.disconnect();
-                try {
-                    if (reader != null)
-                        reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }); //thread
-        thr.start();
-        try {thr.join();} catch(InterruptedException e) {e.printStackTrace();}
-
-        //dialog.dismiss(); // ??
+        /// resolved, show NewRecipe dialog
 
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         try
@@ -264,13 +236,147 @@ public class MainActivity extends AppCompatActivity
             HomeFragment hf = (HomeFragment) navHostFragment.getChildFragmentManager().getFragments().get(0);
             Log.i("daco", "mam instanciu");
             if(hf != null)
-                hf.onNewRecipe(AvideoTitle.get(), AmediaURI.get());
+                hf.onNewRecipe(resolvedTitle, resolvedURI);
         }
         catch(Exception e)
         {
             Log.e("daco", "WORNG FRAGMENT ASSIGMENT !!!");
             e.printStackTrace();
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    private String resolveYoutubeTitle(Uri uri)
+    {
+        AtomicReference<String> resolvedTitle = new AtomicReference<>(new String());
+
+        ProgressDialog loadingDialog; //todo inak?
+        loadingDialog = new ProgressDialog(this);
+        loadingDialog.setMessage("Fetching data. Please wait...");
+        loadingDialog.show();
+
+        Thread thr = new Thread(() ->
+        {
+            HttpsURLConnection connection = null;
+            BufferedReader reader = null;
+            try
+            {
+                URL url = new URL("https://www.youtube.com/oembed?url=" + uri + "&format=json");
+                connection = (HttpsURLConnection) url.openConnection();
+                connection.connect();
+
+                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder stringBuilder = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null)
+                    stringBuilder.append(line);
+
+                JSONObject json = new JSONObject(stringBuilder.toString());
+                resolvedTitle.set(json.getString("title"));
+            }
+            catch (MalformedURLException e)
+            {
+                e.printStackTrace();
+                Log.w("daco", "nespravna URL");
+            }
+            catch (IOException | JSONException e)
+            {
+                e.printStackTrace();
+            }
+            finally
+            {
+                if(connection != null) connection.disconnect();
+                try {if(reader != null) reader.close();}
+                catch(IOException e) {e.printStackTrace();}
+            }
+            //try {Thread.sleep(5000);}
+            //catch(InterruptedException e) {e.printStackTrace();}
+        }); //thread
+        thr.start();
+        try {thr.join();} catch(InterruptedException e) {e.printStackTrace();}
+
+        loadingDialog.dismiss();
+        return resolvedTitle.get();
+    }
+
+    private HashMap<String, String> resolveWebpage(Uri uri)
+    {
+        AtomicReference<String> title = new AtomicReference<>();
+        AtomicReference<String> imageUri = new AtomicReference<>();
+
+        Thread thr = new Thread(() ->
+        {
+            Document document;
+            try {document = Jsoup.connect(uri.toString()).get();}
+            catch (IOException e) {e.printStackTrace(); return;}
+
+            title.set(getMetaTag(document, "og:title"));
+            String ogImage = getMetaTag(document, "og:image");
+            Log.i("daco", "image url: " + ogImage);
+
+            InputStream inStream = null; //data from internet
+            OutputStream outStream = null; //file
+            try
+            {
+                inStream = new URL(ogImage).openStream();
+                Bitmap bitmap = BitmapFactory.decodeStream(inStream);
+                Uri mediaFileURI = createMediaFile(".jpg");
+                outStream = getContentResolver().openOutputStream(mediaFileURI); //open stream from file uri
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outStream);
+                imageUri.set(mediaFileURI.toString());
+            }
+            catch(IOException e)
+            {
+                Log.i("daco", "Streams fail");
+                e.printStackTrace();
+            }
+            finally
+            {
+                try {inStream.close(); outStream.close();}
+                catch(IOException e) {e.printStackTrace();}
+            }
+        });
+        thr.start();
+        try {thr.join();} catch(InterruptedException e) {e.printStackTrace();}
+
+        return new HashMap<String, String>()
+        {{
+            put("title", title.get());
+            put("imageUri", imageUri.get());
+        }};
+    }
+
+    String getMetaTag(Document document, String attr) //todo to lambda
+    {
+        Elements elements = document.select("meta[name=" + attr + "]");
+        for(Element element : elements)
+        {
+            final String s = element.attr("content");
+            if(s != null) return s;
+        }
+        elements = document.select("meta[property=" + attr + "]");
+        for(Element element : elements)
+        {
+            final String s = element.attr("content");
+            if(s != null) return s;
+        }
+        return null;
+    }
+
+    public Uri createMediaFile(String suffix)
+    {
+        //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fileName = "MEDIA_" + "_";
+        File storageDir = getExternalFilesDir("media"); //Environment.DIRECTORY_PICTURES;
+        Uri fileURI = null;
+        try
+        {
+            File file = File.createTempFile(fileName, suffix, storageDir);
+            fileURI = FileProvider.getUriForFile(this, "com.martin.reciper.fileprovider", file);
+        }
+        catch(IOException e) {e.printStackTrace();}
+
+        return fileURI;
     }
 
 
@@ -283,6 +389,50 @@ public class MainActivity extends AppCompatActivity
         if(hf == null) Log.e("daco", "HF null");
         else Log.i("daco", hf.toString());
     }
+
+
+    public void onBackup()
+    {
+        Log.i("daco","backup run.");
+        File storageDir = getExternalFilesDir("db");
+        try
+        {
+            File db = getDatabasePath("Reciper_db");
+            File copy = new File(storageDir + "/backup.db");
+            Log.i("daco","here1");
+            Files.copy(db.toPath(), copy.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Log.i("daco","here2");
+
+            File tmp = new File(getExternalFilesDir("db")+"/backup.db");
+            Log.i("daco", "exist: " + tmp.exists());
+        }
+        catch(IOException e) {e.printStackTrace();}
+
+        /*File fileMetadata = new File();
+        fileMetadata.setName("databaza.db");
+        fileMetadata.setParents(Collections.singletonList("appDataFolder"));
+        java.io.File filePath = new java.io.File("files/config.json");
+        FileContent mediaContent = new FileContent("application/json", filePath);
+        File file = driveService.files().create(fileMetadata, mediaContent).setFields("id").execute();
+        System.out.println("File ID: " + file.getId());
+        Log.i("daco", "File ID: " + file.getId());*/
+
+        return;
+    }
+
+    /*
+    public void onRestore()
+    {
+        FileList files = driveService.files().list()
+                .setSpaces("appDataFolder")
+                .setFields("nextPageToken, files(id, name)")
+                .setPageSize(10)
+                .execute();
+        for (File file : files.getFiles()) {
+            System.out.printf("Found file: %s (%s)\n",
+                    file.getName(), file.getId());
+        }
+    }*/
 
     public void onContactDeveloper()
     {
@@ -303,6 +453,8 @@ public class MainActivity extends AppCompatActivity
         emailIntent.putExtra(Intent.EXTRA_TEXT, body);
         startActivity(Intent.createChooser(emailIntent, getString(R.string.choose_email_client)));
     }
+
+    public AppActivity getAppActivity() {return appActivity;}
 
     ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener()
     {

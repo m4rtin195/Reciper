@@ -1,13 +1,9 @@
 package com.martin.reciper.ui.settings;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -16,7 +12,6 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -24,40 +19,39 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SwitchCompat;
+import androidx.camera.view.CameraView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.martin.reciper.MainActivity;
+import com.martin.reciper.R;
+import com.martin.reciper.models.PostsModel;
 import com.martin.reciper.models.Units;
 import com.martin.reciper.ui.MyProgressBar;
 import com.martin.reciper.ui.MyView;
-import com.martin.reciper.models.PostsModel;
-import com.martin.reciper.R;
 
-import java.util.Arrays;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 
 public class SettingsFragment extends PreferenceFragmentCompat
 {
@@ -76,7 +70,8 @@ public class SettingsFragment extends PreferenceFragmentCompat
     TextView textView1;
     TextView textView2;
     TextView textView3;
-
+    //GoogleMap googleMap;
+    //CameraView camera;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -112,8 +107,8 @@ public class SettingsFragment extends PreferenceFragmentCompat
             return true;
         });
 
-        return onCreateView1(inflater, container, savedInstanceState);  //todo remove this
-        //return view;
+        //return onCreateView1(inflater, container, savedInstanceState);  //todo remove this
+        return view;
     }
 
     @Override
@@ -292,9 +287,20 @@ public class SettingsFragment extends PreferenceFragmentCompat
             }
 
             @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {}
+            public void onAccuracyChanged(Sensor sensor, int i)
+            {
+            }
         };
         sensorManager.registerListener(sensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+/*
+        camera = view.findViewById(R.id.camera);
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+        {
+            Toast.makeText(getContext(), "Camera permission not granted!", Toast.LENGTH_LONG).show();
+        }
+        camera.bindToLifecycle(this);
+        camera.enableTorch(true);*/
 
         return view;
     } //onCreateView1
@@ -319,11 +325,17 @@ public class SettingsFragment extends PreferenceFragmentCompat
             }
         };
 
-        if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+     /*   if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             return;
 
+
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 400, 1, locationListener);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        if (mapFragment != null)
+        {
+            mapFragment.getMapAsync(callback);
+        }*/
     }
 
     public void onDownloadCompleted(boolean success, List<PostsModel> prispevky)
@@ -352,9 +364,27 @@ public class SettingsFragment extends PreferenceFragmentCompat
     {
         //requireActivity().recreate();
 
-        Uri locationUri = Uri.parse("geo:37.7749,-122.4194");
+        /*Uri locationUri = Uri.parse("geo:37.7749,-122.4194");
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, locationUri);
         mapIntent.setPackage("com.google.android.apps.maps");
-        startActivity(mapIntent);
+        startActivity(mapIntent);*/
+
+        ((MainActivity)getActivity()).getAppActivity().deletedb();
+        //((MainActivity)getActivity()).getAppActivity().repopulateDatabase(new File(requireContext().getExternalFilesDir("db")+"/backup.db");
+        ((MainActivity)getActivity()).onBackup();
     };
+
+/*
+    private OnMapReadyCallback callback = new OnMapReadyCallback()
+    {
+        @Override
+        public void onMapReady(GoogleMap gm)
+        {
+            Log.i("daco","mapReady");
+            googleMap = gm;
+            LatLng kaunas = new LatLng(54.898, 23.903);
+            googleMap.addMarker(new MarkerOptions().position(kaunas).title("Marker in Kaunas"));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(kaunas, 12.0f));
+        }
+    };*/
 }

@@ -1,5 +1,6 @@
 package com.martin.reciper.ui.converter;
 
+import android.animation.LayoutTransition;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
@@ -11,13 +12,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
+import androidx.constraintlayout.widget.Group;
+import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 
@@ -29,13 +33,17 @@ import java.text.ParseException;
 import java.util.Objects;
 
 @SuppressWarnings("PointlessBooleanExpression")
-public class ConverterFragment extends Fragment
+public class ConverterFragment extends DialogFragment
 {
     private ConverterViewModel converterViewModel;
     SharedPreferences settings;
     DecimalFormat formatter = new DecimalFormat("#.###");
 
-    enum UnitScope {WEIGHT, VOLUME};
+    enum UnitScope {NONE, WEIGHT, VOLUME};
+
+    LinearLayout layout_converterRoot;
+    LinearLayout layout_weightUnits;
+    LinearLayout layout_volumeUnits;
 
     EditText edit_grams, edit_decagrams, edit_cups, edit_ounces,
             edit_mililiters, edit_pints, edit_tablespoons, edit_teaspoons;
@@ -43,6 +51,7 @@ public class ConverterFragment extends Fragment
     TextView text_convertResult1, text_convertResult2;
     CheckBox check_portions;
 
+    boolean isDialog;
     int favWeightId;
     int favVolumeId;
     float baseValue = 0; //grams
@@ -57,6 +66,13 @@ public class ConverterFragment extends Fragment
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        Bundle args = getArguments();
+        if(args != null)
+        {
+            isDialog = (args.getBoolean("SHOW_AS_DIALOG", false));
+            setShowsDialog(isDialog);
+        }
+
         converterViewModel = new ViewModelProvider(requireActivity()).get(ConverterViewModel.class);
         settings = PreferenceManager.getDefaultSharedPreferences(requireContext());
 
@@ -68,7 +84,21 @@ public class ConverterFragment extends Fragment
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.fragment_converter, container, false);
+        if(isDialog)
+        {
+            Objects.requireNonNull(getDialog()).setTitle(getString(R.string.converter));
+            getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE); //enable resizing of fragment kvoli klavesnici
+            getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN); //keyboard hidden after opening
 
+            /*getDialog().addContentView(new Button(getContext()),
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT));*/ //todo nefunguje ale preco? skusit v onDialog...
+        }
+
+        layout_converterRoot = view.findViewById(R.id.layout_converterRoot);
+            layout_converterRoot.getLayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
+        layout_weightUnits = view.findViewById(R.id.layout_weightUnits);
+        layout_volumeUnits = view.findViewById(R.id.layout_volumeUnits);
         edit_grams = view.findViewById(R.id.edit_grams);
             edit_grams.addTextChangedListener(new cWatcher(edit_grams));
         edit_decagrams  = view.findViewById(R.id.edit_decagrams);
@@ -93,7 +123,7 @@ public class ConverterFragment extends Fragment
             text_convertResult1.setText("= 0");
         text_convertResult2 = view.findViewById(R.id.text_convertResult2);
             text_convertResult2.setText("= 0");
-            text_convertResult2.setVisibility(View.INVISIBLE);
+            text_convertResult2.setVisibility(View.GONE);
         check_portions = view.findViewById(R.id.check_portions);
             check_portions.setOnCheckedChangeListener(onPortionsCheckedChangeListener);
 
@@ -108,7 +138,7 @@ public class ConverterFragment extends Fragment
         {
             Log.i("daco",stateBundle.toString());
             if(!stateBundle.getString("WeightString").isEmpty())
-                edit_grams.setText(stateBundle.getString("WeightString"));
+                edit_ounces.setText(stateBundle.getString("WeightString"));
             if(!stateBundle.getString("VolumeString").isEmpty())
                 edit_mililiters.setText(stateBundle.getString("VolumeString"));
             edit_portions.setText(stateBundle.getString("PortionsString"));
@@ -143,6 +173,15 @@ public class ConverterFragment extends Fragment
         return true;
     }
 
+    public static ConverterFragment dialogInstance()
+    {
+        ConverterFragment fragment = new ConverterFragment();
+        Bundle args = new Bundle();
+        args.putBoolean("SHOW_AS_DIALOG", true);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     TextWatcher portionsWatcher = new TextWatcher()  //portions value changed listener
     {
         @Override public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
@@ -174,18 +213,37 @@ public class ConverterFragment extends Fragment
         }
     };
 
+    public void rewriteResult(UnitScope s)
+    {
+        scope = s;
+        if(isDialog)
+        {
+            if(scope == UnitScope.WEIGHT)
+            {
+                layout_weightUnits.setVisibility(View.VISIBLE);
+                layout_volumeUnits.setVisibility(View.GONE);
+            }
+            if (scope == UnitScope.VOLUME)
+            {
+                layout_weightUnits.setVisibility(View.GONE);
+                layout_volumeUnits.setVisibility(View.VISIBLE);
+            }
+        }
+        rewriteResult();
+    }
+
     protected void rewriteResult()
     {
         if(scope == null) return; //it is in initial state
 
         String unitName = "";
         float ratio = 0;
-        if (scope == UnitScope.WEIGHT)
+        if(scope == UnitScope.WEIGHT)
         {
             unitName = Objects.requireNonNull(Units.getById(favWeightId)).getName();
             ratio = Objects.requireNonNull(Units.getById(favWeightId)).getRatio();
         }
-        if (scope == UnitScope.VOLUME)
+        if(scope == UnitScope.VOLUME)
         {
             unitName = Objects.requireNonNull(Units.getById(favVolumeId)).getName();
             ratio = Objects.requireNonNull(Units.getById(favVolumeId)).getRatio();
@@ -194,12 +252,6 @@ public class ConverterFragment extends Fragment
         basePortionedValue = baseValue * portions;
         text_convertResult1.setText(String.format("= %s %s", formatter.format(baseValue * 1/ratio), unitName));
         text_convertResult2.setText(String.format("= %s %s", formatter.format(basePortionedValue * 1/ratio), unitName));
-    }
-
-    public void rewriteResult(UnitScope s)
-    {
-        scope = s;
-        rewriteResult();
     }
 
     protected void clearFields()
@@ -222,7 +274,7 @@ public class ConverterFragment extends Fragment
         public void onCheckedChanged(CompoundButton compoundButton, boolean b)
         {
             boolean checkedState = check_portions.isChecked();
-            text_convertResult2.setVisibility(checkedState ? View.VISIBLE : View.INVISIBLE);
+            text_convertResult2.setVisibility(checkedState ? View.VISIBLE : View.GONE);
             if(checkedState == true && edit_portions.getText().toString().isEmpty())
                 edit_portions.setText(settings.getString("default_portions","1/4"));
             if(checkedState == false)
@@ -246,10 +298,12 @@ public class ConverterFragment extends Fragment
             {
                 baseValue = Float.parseFloat(field.getText().toString());
             }
-            catch (NumberFormatException e) //empty value
+            catch(NumberFormatException e) //empty value
             {
                 _ignore = true;
                 clearFields(UnitScope.WEIGHT); clearFields(UnitScope.VOLUME);
+                scope = UnitScope.NONE;
+                layout_weightUnits.setVisibility(View.VISIBLE); layout_volumeUnits.setVisibility(View.VISIBLE);
                 text_convertResult1.setText("= 0"); text_convertResult2.setText("= 0");
                 _ignore = false;
                 return;

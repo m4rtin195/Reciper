@@ -6,17 +6,20 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.MediaController;
@@ -30,7 +33,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -38,13 +40,12 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.martin.reciper.AppActivity;
+import com.martin.reciper.MainActivity;
 import com.martin.reciper.R;
 import com.martin.reciper.adapters.IngredientAdapter;
 import com.martin.reciper.database.AppDatabase;
 import com.martin.reciper.models.Recipe;
-
-import java.io.File;
-import java.io.IOException;
+import com.martin.reciper.ui.converter.ConverterFragment;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -56,6 +57,9 @@ public class RecipeFragment extends Fragment
     Recipe rcpt;
     IngredientAdapter ingredients;
 
+    MenuItem menu_editIcon;
+    MenuItem menu_mediaIcon;
+
     TextView text_recipeName, text_recipeText;
     EditText edit_recipeName, edit_recipeText;
     RatingBar rating_recipeRating;
@@ -65,17 +69,17 @@ public class RecipeFragment extends Fragment
     ConstraintLayout layout_media;
     ImageView image_media;
     VideoView video_media;
-    WebView web_video;
+    WebView web_element;
     FloatingActionButton fab_converter;
 
-    MenuItem menu_editIcon;
-    MenuItem menu_mediaIcon;
+    ConverterFragment converterFragment;
 
     boolean editMode = false;
     Uri tempURI;
 
     static final int CAPTURE_PHOTO = 1;
     static final int CAPTURE_VIDEO = 2;
+    static final int GALLERY_PICKER = 3;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -84,6 +88,8 @@ public class RecipeFragment extends Fragment
         setHasOptionsMenu(true);
 
         recipeViewModel = new ViewModelProvider(requireActivity()).get(RecipeViewModel.class);
+        converterFragment = ConverterFragment.dialogInstance();
+        converterFragment.setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
 
         if(getArguments() != null)
             rcpt = getArguments().getParcelable("recipe");
@@ -105,13 +111,15 @@ public class RecipeFragment extends Fragment
             rating_recipeRating.setRating(rcpt.getRecipeRating());
 
         layout_media = view.findViewById(R.id.layout_media);
+            layout_media.setVisibility(!rcpt.getMediaURI().isEmpty() ? View.VISIBLE : View.GONE);
         image_media = view.findViewById(R.id.image_media);
         video_media = view.findViewById(R.id.video_media);
-        web_video = view.findViewById(R.id.web_video);
+        web_element = view.findViewById(R.id.web_video);
 
         list_ingredients = view.findViewById(R.id.list_ingredients);
             list_ingredients.setAdapter(ingredients = new IngredientAdapter(getActivity(), rcpt.getIngredients()));
-            list_ingredients.setOnItemClickListener(onListIngredietnsItemClickListener);
+            list_ingredients.setOnItemClickListener((adapterView, view2, i, l) -> {onIngredietnsListItemClick(i,l); return;});
+            list_ingredients.setOnItemLongClickListener((adapterView, view2, i, l) -> {onIngredietnsListItemClick(i,l); return true;});
             list_ingredients.invalidate(); //todo prekresli layout
             footerView_ingredients =  inflater.inflate(R.layout.row_footer, null, false);
         text_recipeText = view.findViewById(R.id.text_recipeText);
@@ -135,7 +143,7 @@ public class RecipeFragment extends Fragment
         this.menu = menu;
 
         menu_mediaIcon = menu.findItem(R.id.menu_recipe_media);
-            menu_mediaIcon.setEnabled(false);
+            menu_mediaIcon.setVisible(false);
         menu_editIcon = menu.findItem(R.id.menu_recipe_edit);
             menu_editIcon.setIconTintList(null);
     }
@@ -162,27 +170,30 @@ public class RecipeFragment extends Fragment
         return true;
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     private void loadMedia()
     {
+        layout_media.setVisibility(View.GONE);
         image_media.setVisibility(View.GONE);
         video_media.setVisibility(View.GONE);
-        web_video.setVisibility(View.GONE);
-
-        if(rcpt.getMediaURI().isEmpty()) return;
+        web_element.setVisibility(View.GONE);
 
         Uri mediaURI = Uri.parse(rcpt.getMediaURI());
+        if(mediaURI.getScheme() == null) return;
         switch(mediaURI.getScheme())
         {
             case "content":  //local image or video
             {
-                if(mediaURI.getLastPathSegment().endsWith(".jpg"))  //local image
+                if(requireContext().getContentResolver().getType(mediaURI).startsWith("image"))  //local image
                 {
+                    layout_media.setVisibility(View.VISIBLE);
                     image_media.setVisibility(View.VISIBLE);
                     image_media.setImageURI(mediaURI);
                     break;
                 }
-                if(mediaURI.getLastPathSegment().endsWith(".mp4"))  //local video
+                if(requireContext().getContentResolver().getType(mediaURI).startsWith("video"))
                 {
+                    layout_media.setVisibility(View.VISIBLE);
                     video_media.setVisibility(View.VISIBLE);
                     video_media.setVideoURI(mediaURI);
                     video_media.setMediaController(new MediaController(requireContext()));
@@ -191,6 +202,7 @@ public class RecipeFragment extends Fragment
                     video_media.requestFocus();
                     break;
                 }
+
                 Toast.makeText(getContext(), "Unknown local media", Toast.LENGTH_SHORT).show();
                 break;
             }
@@ -199,18 +211,29 @@ public class RecipeFragment extends Fragment
             {
                 if(mediaURI.getAuthority().contains("youtu.be") || mediaURI.getAuthority().contains("youtube.com"))
                 {
-                    web_video.setVisibility(View.VISIBLE);
-                    web_video.getSettings().setJavaScriptEnabled(true);
-                    web_video.setWebChromeClient(new WebChromeClient());
-                    int n = rcpt.getMediaURI().lastIndexOf('/');
-                    String videoID = rcpt.getMediaURI().substring(n+1);
+                    layout_media.setVisibility(View.VISIBLE);
+                    web_element.setVisibility(View.VISIBLE);
+                    web_element.getSettings().setJavaScriptEnabled(true);
+                    web_element.setWebChromeClient(new WebChromeClient());
+                    web_element.setWebViewClient(new WebViewClient()
+                    {
+                        public void onPageFinished(WebView view, String url)
+                        {
+                            web_element.setForeground(null);
+                        }
+                    });
+                    int n = mediaURI.toString().lastIndexOf('/');
+                    String videoID = mediaURI.toString().substring(n+1);
                     String iframe = "<iframe width=\"311\" height=\"166\" src=\"https://www.youtube.com/embed/" + videoID + "\" frameborder=\"0\" allowfullscreen></iframe>";
-                    web_video.loadData(iframe, "text/html", "utf-8");
-                    web_video.setForeground(null);
+                    web_element.loadData(iframe, "text/html", "utf-8");
                 }
-                else    //page, try to resolve image
+                else   //page
                 {
-                    ;
+                    layout_media.setVisibility(View.VISIBLE);
+                    web_element.setVisibility(View.VISIBLE);
+                    web_element.setForeground(null);
+                    String html = "Content not supported. <br><br> <a href=\"" + mediaURI + "\">" + mediaURI + "</a>";
+                    web_element.loadData(html, "text/html", "utf-8");
                 }
                 break;
             }
@@ -233,9 +256,10 @@ public class RecipeFragment extends Fragment
 
         if(intent.resolveActivity(requireActivity().getPackageManager()) != null)
         {
-            Uri mediaFileURI = createMediaFile(suffix);
+            Uri mediaFileURI = ((MainActivity)requireActivity()).createMediaFile(suffix);
             if(mediaFileURI != null)
             {
+                tempURI = mediaFileURI;
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, mediaFileURI);
                 startActivityForResult(intent, action);
             }
@@ -244,21 +268,11 @@ public class RecipeFragment extends Fragment
         }
     }
 
-    private Uri createMediaFile(String suffix)
+    void openFilePicker()
     {
-        //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String fileName = "MEDIA_" + "_";
-        File storageDir = requireActivity().getExternalFilesDir(null); //Environment.DIRECTORY_PICTURES;
-        Uri fileURI = null;
-        try
-        {
-            File file = File.createTempFile(fileName, suffix, storageDir);
-            fileURI = FileProvider.getUriForFile(requireContext(), "com.martin.reciper.fileprovider", file);
-            tempURI = fileURI;
-        }
-        catch(IOException e) {e.printStackTrace();}
-
-        return fileURI;
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        startActivityForResult(intent, GALLERY_PICKER);
     }
 
     @Override
@@ -266,32 +280,64 @@ public class RecipeFragment extends Fragment
     {
         if(requestCode == CAPTURE_PHOTO || requestCode == CAPTURE_VIDEO)
         {
-            if(resultCode == RESULT_OK)
-            {
-                rcpt.setMediaURI(tempURI.toString());
-                image_media.setImageURI(Uri.parse(tempURI.toString()));
-            }
-            else
-                Toast.makeText(getContext(), "Failed to capture media, " + resultCode, Toast.LENGTH_SHORT).show();
+            if(resultCode == RESULT_OK) rcpt.setMediaURI(tempURI.toString());
+            else Toast.makeText(getContext(), "Failed to capture media, " + resultCode, Toast.LENGTH_SHORT).show();
 
             tempURI = null;
+            loadMedia();
+        }
+
+        if(requestCode == GALLERY_PICKER)
+        {
+            if(resultCode == RESULT_OK) rcpt.setMediaURI(intent.getData().toString());
+            else Toast.makeText(getContext(), "Failed to get media from file picker, " + resultCode, Toast.LENGTH_SHORT).show();
+            //todo copy file to local, because foreign provider provides only temporary file
+
             loadMedia();
         }
     }
 
     private void onMediaChange()
     {
-        String url = rcpt.getMediaURI();
-        EditText input = new EditText(getContext());
-        input.setText(url);
+        String path = rcpt.getMediaURI();
 
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
-        builder.setTitle(getString(R.string.media_descriptor));
-        builder.setView(input);
-        builder.setNegativeButton(getString(R.string.photo), (dialog, which) -> captureMedia(CAPTURE_PHOTO));
-        builder.setPositiveButton(getString(R.string.video), (dialog, which) -> captureMedia(CAPTURE_VIDEO));
-        builder.setNeutralButton(getString(R.string.save), (dialog, which) -> rcpt.setMediaURI(input.getText().toString()));
-        builder.show();
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.topMargin = getResources().getDimensionPixelSize(R.dimen.dialog_margin_top); params.leftMargin = getResources().getDimensionPixelSize(R.dimen.dialog_margin); params.rightMargin = getResources().getDimensionPixelSize(R.dimen.dialog_margin);
+
+        EditText input = new EditText(getContext());
+        input.setText(path);
+        input.setLayoutParams(params);
+        FrameLayout container = new FrameLayout(requireContext());
+        container.addView(input);
+
+        MaterialAlertDialogBuilder mediaDialog = new MaterialAlertDialogBuilder(requireContext());
+        mediaDialog.setTitle(getString(R.string.media_descriptor));
+        mediaDialog.setView(container);
+
+        mediaDialog.setPositiveButton(getString(R.string.newMedia), (dialogInterface, i) ->
+        {
+            MaterialAlertDialogBuilder sourceDialog = new MaterialAlertDialogBuilder(requireContext());
+            sourceDialog.setItems(new CharSequence[] {getString(R.string.takePhoto), /*getString(R.string.recordVideo),*/ getString(R.string.select_gallery)}, (dialogInterface2, j) ->
+            {
+                switch(j)
+                {
+                    case 0: captureMedia(CAPTURE_PHOTO); break;
+                    //case 1: captureMedia(CAPTURE_VIDEO); break;
+                    case 1: openFilePicker(); break;
+                }
+            });
+            sourceDialog.show();
+        });
+        mediaDialog.setNegativeButton(getString(R.string.open), (dialog2, which) ->
+        {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(path));
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
+        });
+
+        mediaDialog.setNeutralButton(getString(R.string.save), (dialog2, which) -> rcpt.setMediaURI(input.getText().toString()));
+        mediaDialog.show();
     }
 
     private void onConverterOpen()
@@ -299,10 +345,10 @@ public class RecipeFragment extends Fragment
         AlertDialog.Builder dialog = new AlertDialog.Builder(requireContext());
         dialog.setTitle(getString(R.string.converter));
         dialog.setView(R.layout.fragment_converter);
-        dialog.setNegativeButton("Close", (dialog2, which) -> {});
-        dialog.show();
-        DialogFragment frg = new DialogFragment();
-        //frg.show()
+        dialog.setNegativeButton(getString(R.string.close), (dialog2, which) -> {});
+        //dialog.show();
+
+        converterFragment.show(requireActivity().getSupportFragmentManager(),null);
     }
 
     private void onEditMode()
@@ -311,7 +357,7 @@ public class RecipeFragment extends Fragment
         if(editMode)
         {
             menu_editIcon.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_save));
-            menu_mediaIcon.setEnabled(true);
+            menu_mediaIcon.setVisible(true);
 
             text_recipeName.setVisibility(View.INVISIBLE);
             edit_recipeName.setVisibility(View.VISIBLE);
@@ -325,7 +371,7 @@ public class RecipeFragment extends Fragment
         else //dokonceny edit
         {
             menu_editIcon.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_edit));
-            menu_mediaIcon.setEnabled(false);
+            menu_mediaIcon.setVisible(false);
 
             text_recipeName.setVisibility(View.VISIBLE);
             edit_recipeName.setVisibility(View.INVISIBLE);
@@ -384,32 +430,44 @@ public class RecipeFragment extends Fragment
     }
 
 
-    AdapterView.OnItemClickListener onListIngredietnsItemClickListener = (adapterView, view, i, l) ->
+    void onIngredietnsListItemClick(int i, long l)
     {
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.topMargin = getResources().getDimensionPixelSize(R.dimen.dialog_margin_top); params.leftMargin = getResources().getDimensionPixelSize(R.dimen.dialog_margin); params.rightMargin = getResources().getDimensionPixelSize(R.dimen.dialog_margin);
+
         if(editMode)
         {
             if(l == -1) //footer
             {
-                AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-                builder.setTitle(getString(R.string.add_ingredient));
+                MaterialAlertDialogBuilder addIngredDialog = new MaterialAlertDialogBuilder(requireContext());
 
-                EditText input = new EditText(getContext());
-                builder.setView(input);
-                builder.setPositiveButton(getString(R.string.add), (dialog, which) -> ingredients.add(input.getText().toString()));
-                builder.show();
+                EditText input = new EditText(requireContext());
+                input.setLayoutParams(params);
+                FrameLayout container = new FrameLayout(requireContext());
+                container.addView(input);
+
+                addIngredDialog.setTitle(getString(R.string.add_ingredient));
+                addIngredDialog.setView(container);
+                addIngredDialog.setPositiveButton(getString(R.string.add), (dialog, which) -> ingredients.add(input.getText().toString()));
+                addIngredDialog.show();
             }
             else //surovina
             {
-                String word = ingredients.getItem(i);
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
-                builder.setTitle(getString(R.string.edit_ingredient));
-                EditText input = new EditText(getContext());
-                input.setText(word);
-                builder.setView(input);
-                builder.setPositiveButton(getString(R.string.save), (dialog, which) -> {ingredients.remove(word); ingredients.insert(input.getText().toString(),i);});
-                builder.setNegativeButton(getString(R.string.delete), (dialog, which) -> ingredients.remove(word));
-                builder.show();
+                String ingred = ingredients.getItem(i);
+
+                EditText input = new EditText(requireContext());
+                input.setText(ingred);
+                input.setLayoutParams(params);
+                FrameLayout container = new FrameLayout(requireContext());
+                container.addView(input);
+
+                MaterialAlertDialogBuilder editIngredDialog = new MaterialAlertDialogBuilder(requireContext());
+                editIngredDialog.setTitle(getString(R.string.edit_ingredient));
+                editIngredDialog.setView(container);
+                editIngredDialog.setPositiveButton(getString(R.string.save), (dialog, which) -> {ingredients.remove(ingred); ingredients.insert(input.getText().toString(),i);});
+                editIngredDialog.setNegativeButton(getString(R.string.delete), (dialog, which) -> ingredients.remove(ingred));
+                editIngredDialog.show();
             }
         }
-    };
+    }
 }

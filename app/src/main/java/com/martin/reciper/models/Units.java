@@ -40,8 +40,8 @@ public class Units
     public static Unit tablespoons = new Unit("table spoons", 15.0f, 7);
     public static Unit teaspoons = new Unit("tea spoons", 5.0f, 8);
 
-    private static int idDevider = 4;
-    private static List<Unit> units = new ArrayList<>(Arrays.asList(grams, decagrams, cups, ounces, mililiters, pints, tablespoons, teaspoons));
+    private static final int idDevider = 4;
+    private static final List<Unit> units = new ArrayList<>(Arrays.asList(grams, decagrams, cups, ounces, mililiters, pints, tablespoons, teaspoons));
 
     //methods of Units
     public static List<String> toStringArray()

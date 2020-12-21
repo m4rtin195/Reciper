@@ -64,5 +64,13 @@
     <string name="media_descriptor">Recipe media</string>
     <string name="video">Video</string>
     <string name="photo">Photo</string>
+    <string name="close">Close</string>
+    <string name="select_gallery">Select from gallery</string>
+    <string name="recordVideo">Record a video</string>
+    <string name="takePhoto">Take a photo</string>
+    <string name="newMedia">New media</string>
+    <string name="open">Open</string>
+    <string name="backup">Backup now</string>
+    <string name="restorenow">Restore now</string>
 
 </resources>

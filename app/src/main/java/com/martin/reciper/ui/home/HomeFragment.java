@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,12 +15,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.CycleInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.appcompat.widget.SearchView;
 
@@ -30,6 +38,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.preference.PreferenceManager;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.martin.reciper.AppActivity;
 import com.martin.reciper.R;
@@ -41,7 +50,6 @@ import java.util.ArrayList;
 
 public class HomeFragment extends Fragment
 {
-    private HomeViewModel homeViewModel;
     AppDatabase db = AppActivity.getDatabase();
     SharedPreferences settings;
 
@@ -173,13 +181,36 @@ public class HomeFragment extends Fragment
         if(!name.isEmpty())
             input.setText(name);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(requireContext());
-        dialog.setTitle(getString(R.string.recipe_create));
-        dialog.setView(content);
-        dialog.setPositiveButton(getString(R.string.create), (dialog2, which) ->
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+        builder.setTitle(getString(R.string.recipe_create));
+        builder.setView(content);
+        builder.setPositiveButton(getString(R.string.create), (dialog2, which) -> {});
+        //builder.show();
+
+        AlertDialog newRecipeDialog = builder.create();
+        newRecipeDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        newRecipeDialog.show();
+
+        Button dialogPButton = newRecipeDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        dialogPButton.setEnabled(false);
+        input.addTextChangedListener(new TextWatcher()
         {
+            @Override public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            @Override public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+            @Override public void afterTextChanged(Editable editable) {dialogPButton.setEnabled(!editable.toString().isEmpty());}
+        });
+        dialogPButton.setOnClickListener(view ->
+        {
+            /*if(input.getText().toString().isEmpty())
+            {
+                Animation shake = AnimationUtils.loadAnimation(requireContext(), R.anim.shake);
+                shake.setInterpolator(new CycleInterpolator(3));
+                input.startAnimation(shake);
+                return; //from listener
+            }*/ //nahradene setEnabled
+
+            newRecipeDialog.dismiss();
             Recipe rcpt = new Recipe();
-            //TODO check that is not empty
             rcpt.setRecipeName(input.getText().toString());
             if(mediaURI != null)
                 rcpt.setMediaURI(mediaURI.toString());
@@ -194,7 +225,6 @@ public class HomeFragment extends Fragment
             bundle.putBoolean("isNew", true);
             navController.navigate(R.id.action_navigation_home_to_recipe, bundle);
         });
-        dialog.show();
     }
 
 
@@ -205,7 +235,7 @@ public class HomeFragment extends Fragment
             {onYoutubeSearch(); return true;}
 
         InputMethodManager inputManager = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputManager.hideSoftInputFromWindow(requireActivity().getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
+        inputManager.hideSoftInputFromWindow(requireActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         return false;
     };
 
@@ -223,7 +253,7 @@ public class HomeFragment extends Fragment
     {
         if(l == -1) return false; //footer
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
         builder.setTitle("Delete Recipe?");
         builder.setPositiveButton("Yes", (dialog, which) ->
         {

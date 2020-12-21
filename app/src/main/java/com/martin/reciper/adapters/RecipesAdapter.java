@@ -83,7 +83,7 @@ public class RecipesAdapter extends ArrayAdapter<Recipe> implements Filterable
                 for(int i=0; i<array.size(); i++)
                 {
                     Recipe rcpt = array.get(i);
-                    if(rcpt.getRecipeName().toLowerCase().startsWith(constr))
+                    if(rcpt.getRecipeName().toLowerCase().contains(constr))
                         filteredArray.add(rcpt);
                 }
 

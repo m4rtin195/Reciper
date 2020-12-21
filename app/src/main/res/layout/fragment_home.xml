@@ -27,7 +27,7 @@
         android:id="@+id/group_youtube"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="text_search,edit_query,button_search" />
+        app:constraint_referenced_ids="text_search, edit_query, button_search" />
 
     <TextView
         android:id="@+id/text_search"
@@ -42,16 +42,17 @@
     <EditText
         android:id="@+id/edit_query"
         android:layout_width="0dp"
-        android:layout_height="46dp"
-        android:layout_marginStart="24dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:ems="10"
         android:hint="@string/foodname"
-        android:inputType="textPersonName"
-        android:singleLine="true"
-        android:importantForAutofill="no"
-        android:imeOptions="actionGo"
         android:imeActionLabel="GO"
+        android:imeOptions="actionGo"
+        android:importantForAutofill="no"
+        android:inputType="textPersonName"
+        android:paddingHorizontal="8dp"
+        android:singleLine="true"
         app:layout_constraintEnd_toStartOf="@+id/button_search"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_search" />
@@ -72,7 +73,7 @@
         android:id="@+id/text_myrecipes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:text="@string/my_recipes"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -84,8 +85,8 @@
         android:layout_height="wrap_content"
         android:queryHint="Search...."
         android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_myrecipes" />
 
     <ListView
@@ -93,14 +94,13 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:footerDividersEnabled="false"
-        android:paddingStart="16dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginVertical="16dp"
 
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_filter" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/search_filter"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_addNew"
