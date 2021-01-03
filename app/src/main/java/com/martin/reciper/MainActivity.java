@@ -2,7 +2,6 @@ package com.martin.reciper;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,15 +12,12 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
-import com.google.android.gms.common.util.IOUtils;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.martin.reciper.ui.home.HomeFragment;
 
@@ -46,7 +42,6 @@ import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -55,14 +50,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.security.GeneralSecurityException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -70,15 +61,18 @@ import javax.net.ssl.HttpsURLConnection;
 public class MainActivity extends AppCompatActivity
 {
     AppActivity appActivity;
-
     SharedPreferences settings;
-    BottomNavigationView navbar;
+
+    CollapsingToolbarLayout toolBarLayout;
     Toolbar toolbar;
+    BottomNavigationView navbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        Log.i("daco","here");
         appActivity = new AppActivity();
+        Log.i("daco","here2");
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -89,20 +83,20 @@ public class MainActivity extends AppCompatActivity
         //LocaleList current = getResources().getConfiguration().getLocales();
         //Log.i("daco", "current locale: " + current.toString());
 
-        navbar = findViewById(R.id.navbar);
+        toolBarLayout = findViewById(R.id.collapsing_toolbar_layout);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar); //set toolbar as actionbar
+        navbar = findViewById(R.id.navbar);
 
         //NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavController navController = ((NavHostFragment) Objects.requireNonNull(getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment))).getNavController();
         navController.addOnDestinationChangedListener(onDestinationChangedListener);
 
-        //Passing each menu ID as a set of Ids because each menu should be considered as top level destinations.
+        //additional conf, defining more top level destinations
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(R.id.navigation_home).build();
 
-        //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration); //ActionBar setup
         NavigationUI.setupWithNavController(navbar, navController); //Navbar setup
-        NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration); //Toolbar setup //prepisovanie title
+        NavigationUI.setupWithNavController(toolBarLayout, toolbar, navController); //Toolbar setup
 
         final View activityRootView = getWindow().getDecorView().findViewById(android.R.id.content);
         activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener); //keyboard listener
@@ -134,7 +128,7 @@ public class MainActivity extends AppCompatActivity
     protected void attachBaseContext(Context newBase)
     {
         super.attachBaseContext(newBase);
-        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        settings = PreferenceManager.getDefaultSharedPreferences(this); //todo potrebne? je to aj hore
         if(!settings.getString("language", "system").equals("system"))
             applyOverrideConfiguration(new Configuration());
     }
@@ -146,10 +140,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     @SuppressLint("ObsoleteSdkInt")
-    @SuppressWarnings("ConstantConditions")
     private Configuration updateConfigurationLanguage(Configuration config)
     {
-        if (Build.VERSION.SDK_INT >= 24)
+        if(Build.VERSION.SDK_INT >= 24)
         {
             if (!config.getLocales().isEmpty())
                 return config;
@@ -224,7 +217,6 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-
         /// resolved, show NewRecipe dialog
 
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
@@ -265,6 +257,7 @@ public class MainActivity extends AppCompatActivity
                 connection = (HttpsURLConnection) url.openConnection();
                 connection.connect();
 
+                //build response string
                 reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 StringBuilder stringBuilder = new StringBuilder();
                 String line;
@@ -380,17 +373,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public void skuska()
-    {
-        Log.i("daco", "skuska()");
-        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
-        //HomeFragment hf = (HomeFragment) navHostFragment.getChildFragmentManager().findFragmentById(R.id.fragment_home);
-        HomeFragment hf = (HomeFragment) navHostFragment.getChildFragmentManager().getFragments().get(0);
-        if(hf == null) Log.e("daco", "HF null");
-        else Log.i("daco", hf.toString());
-    }
-
-
     public void onBackup()
     {
         Log.i("daco","backup run.");
@@ -420,42 +402,12 @@ public class MainActivity extends AppCompatActivity
         return;
     }
 
-    /*
-    public void onRestore()
+    public AppActivity getAppActivity()
     {
-        FileList files = driveService.files().list()
-                .setSpaces("appDataFolder")
-                .setFields("nextPageToken, files(id, name)")
-                .setPageSize(10)
-                .execute();
-        for (File file : files.getFiles()) {
-            System.out.printf("Found file: %s (%s)\n",
-                    file.getName(), file.getId());
-        }
-    }*/
-
-    public void onContactDeveloper()
-    {
-        String body = null;
-        try
-        {
-            body = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-            body = "\n\n-----------------------------\nPlease don't remove this information\n Device OS: Android \n Device OS version: " +
-                    Build.VERSION.RELEASE + "\n App Version: " + body + "\n Device Brand: " + Build.BRAND +
-                    "\n Device Model: " + Build.MODEL + "\n Device Manufacturer: " + Build.MANUFACTURER;
-        }
-        catch(PackageManager.NameNotFoundException ignored) {}
-
-        Intent emailIntent = new Intent(Intent.ACTION_SEND);
-        emailIntent.setType("message/rfc822");
-        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"martin.timko@centrum.sk", "martin.timko@ktu.edu"});
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Query from Reciper app");
-        emailIntent.putExtra(Intent.EXTRA_TEXT, body);
-        startActivity(Intent.createChooser(emailIntent, getString(R.string.choose_email_client)));
+        return appActivity;
     }
 
-    public AppActivity getAppActivity() {return appActivity;}
-
+    //zmena klavesnice
     ViewTreeObserver.OnGlobalLayoutListener onGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener()
     {
         boolean isOpened = false;
@@ -482,12 +434,14 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+    //zmena navigacie
     NavController.OnDestinationChangedListener onDestinationChangedListener = new NavController.OnDestinationChangedListener()
     {
         @Override
         public void onDestinationChanged(@NonNull NavController controller, @NonNull NavDestination destination, @Nullable Bundle arguments)
         {
-            //Toast.makeText(MainActivity.this, "navigation event", Toast.LENGTH_SHORT).show();
+            //if(destination.getId() != R.id.navigation_recipe)
+                //toolBarLayout.setTitleEnabled(false);
         }
     };
 }

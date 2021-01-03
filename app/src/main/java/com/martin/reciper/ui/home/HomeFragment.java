@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,16 +15,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.CycleInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.appcompat.widget.SearchView;
 
@@ -82,7 +77,7 @@ public class HomeFragment extends Fragment
     public View onCreateView(@NonNull final LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState)
     {
         final View view = inflater.inflate(R.layout.fragment_home, container, false);
-        toolbar = requireActivity().findViewById(R.id.toolbar);
+        toolbar = requireActivity().findViewById(R.id.toolbar_recipe);
         navController = NavHostFragment.findNavController(this);
 
         group_youtube = view.findViewById(R.id.group_youtube);
@@ -153,14 +148,6 @@ public class HomeFragment extends Fragment
         return true;
     }
 
-    @Override
-    public void onDestroyView()
-    {
-        //toolbar.removeView(abc);
-        super.onDestroyView();
-    }
-
-
     private void onYoutubeSearch()
     {
         Intent intent = new Intent(Intent.ACTION_SEARCH);
@@ -176,7 +163,7 @@ public class HomeFragment extends Fragment
 
     public void onNewRecipe(String name, Uri mediaURI)
     {
-        View content = getLayoutInflater().inflate(R.layout.dialog_recipe,null);
+        View content = getLayoutInflater().inflate(R.layout.dialog_newrecipe,null);
         EditText input = content.findViewById(R.id.editbox);
         if(!name.isEmpty())
             input.setText(name);

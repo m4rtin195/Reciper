@@ -32,16 +32,17 @@ public class RecipesAdapter extends ArrayAdapter<Recipe> implements Filterable
     @Override
     public View getView(int position, View convertView, ViewGroup parent)
     {
-        Animation anim = AnimationUtils.loadAnimation(getContext(), R.anim.alpha);
-        //anim.setInterpolator(getContext(), android.R.anim.linear_interpolator);
-        anim.setDuration(500);
-        anim.setStartOffset(500+500*position);
-
         View view = convertView;
+
+        //Animation anim = AnimationUtils.loadAnimation(getContext(), R.anim.alpha);
+        //anim.setInterpolator(getContext(), android.R.anim.linear_interpolator);
+        //anim.setDuration(500);
+        //anim.setStartOffset(500+500*position);
+
         if(view == null)
         {
-            LayoutInflater vi = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = vi.inflate(R.layout.row_recipe, null);
+            LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            view = inflater.inflate(R.layout.row_recipe, null);
             //view.startAnimation(anim);
         }
 
@@ -63,7 +64,7 @@ public class RecipesAdapter extends ArrayAdapter<Recipe> implements Filterable
     }
 
     @Override
-    public Recipe getItem (int i)
+    public Recipe getItem(int i)
     {
         return array.get(i);
     }
@@ -102,6 +103,7 @@ public class RecipesAdapter extends ArrayAdapter<Recipe> implements Filterable
                 notifyDataSetChanged();
             }
         };
+
         return filter;
     }
 }

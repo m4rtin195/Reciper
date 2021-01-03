@@ -12,12 +12,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -31,18 +28,21 @@ import android.widget.VideoView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.martin.reciper.AppActivity;
 import com.martin.reciper.MainActivity;
 import com.martin.reciper.R;
-import com.martin.reciper.adapters.IngredientAdapter;
+import com.martin.reciper.adapters.IngredientsAdapter;
 import com.martin.reciper.database.AppDatabase;
 import com.martin.reciper.models.Recipe;
 import com.martin.reciper.ui.converter.ConverterFragment;
@@ -55,8 +55,10 @@ public class RecipeFragment extends Fragment
     AppDatabase db = AppActivity.getDatabase();
     Menu menu;
     Recipe rcpt;
-    IngredientAdapter ingredients;
+    IngredientsAdapter ingredients;
 
+    CollapsingToolbarLayout toolBarLayout;
+    Toolbar toolbar;
     MenuItem menu_editIcon;
     MenuItem menu_mediaIcon;
 
@@ -103,6 +105,12 @@ public class RecipeFragment extends Fragment
     {
         View view = inflater.inflate(R.layout.fragment_recipe, container, false);
 
+        toolBarLayout = getActivity().findViewById(R.id.collapsing_toolbar_layout);
+            toolBarLayout.setTitleEnabled(true);
+            toolBarLayout.setTitle(rcpt.getRecipeName());
+        toolbar = view.findViewById(R.id.toolbar_recipe);
+            //toolbar.setTitle("aaaa");
+
         text_recipeName = view.findViewById(R.id.text_recipeName);
             text_recipeName.setText(rcpt.getRecipeName());
         edit_recipeName = view.findViewById(R.id.edit_recipeName);
@@ -117,7 +125,8 @@ public class RecipeFragment extends Fragment
         web_element = view.findViewById(R.id.web_video);
 
         list_ingredients = view.findViewById(R.id.list_ingredients);
-            list_ingredients.setAdapter(ingredients = new IngredientAdapter(getActivity(), rcpt.getIngredients()));
+            ingredients = new IngredientsAdapter(requireActivity(), rcpt.getIngredients());
+            list_ingredients.setAdapter(ingredients);
             list_ingredients.setOnItemClickListener((adapterView, view2, i, l) -> {onIngredietnsListItemClick(i,l); return;});
             list_ingredients.setOnItemLongClickListener((adapterView, view2, i, l) -> {onIngredietnsListItemClick(i,l); return true;});
             list_ingredients.invalidate(); //todo prekresli layout
@@ -134,6 +143,13 @@ public class RecipeFragment extends Fragment
 
         return view;
     } //onCreateView
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        //toolBarLayout.setTitleEnabled(false);
+    }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater)
@@ -170,6 +186,49 @@ public class RecipeFragment extends Fragment
         return true;
     }
 
+
+    private void onEditMode()
+    {
+        editMode = !editMode;
+        if(editMode)
+        {
+            menu_editIcon.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_save));
+            menu_mediaIcon.setVisible(true);
+
+            text_recipeName.setVisibility(View.INVISIBLE);
+            edit_recipeName.setVisibility(View.VISIBLE);
+            rating_recipeRating.setIsIndicator(false);
+            text_recipeText.setVisibility(View.GONE);
+            edit_recipeText.setVisibility(View.VISIBLE);
+
+            list_ingredients.setEnabled(true);
+            list_ingredients.addFooterView(footerView_ingredients);
+        }
+        else //dokonceny edit
+        {
+            menu_editIcon.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_edit));
+            menu_mediaIcon.setVisible(false);
+
+            text_recipeName.setVisibility(View.VISIBLE);
+            edit_recipeName.setVisibility(View.INVISIBLE);
+            rating_recipeRating.setIsIndicator(true);
+            text_recipeText.setVisibility(View.VISIBLE);
+            edit_recipeText.setVisibility(View.GONE);
+
+            rcpt.setRecipeName(edit_recipeName.getText().toString());
+            rcpt.setRecipeRating(rating_recipeRating.getRating());
+            rcpt.setRecipeText(edit_recipeText.getText().toString());
+
+            text_recipeName.setText(edit_recipeName.getText().toString());
+            text_recipeText.setText(edit_recipeText.getText().toString());
+
+            list_ingredients.setEnabled(false);
+            list_ingredients.removeFooterView(footerView_ingredients);
+
+            db.DAO().updateRecipe(rcpt);
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     private void loadMedia()
     {
@@ -203,7 +262,7 @@ public class RecipeFragment extends Fragment
                     break;
                 }
 
-                Toast.makeText(getContext(), "Unknown local media", Toast.LENGTH_SHORT).show();
+                Snackbar.make(getView(), "Unknown local media", Snackbar.LENGTH_SHORT).show();
                 break;
             }
             case "http":
@@ -291,7 +350,7 @@ public class RecipeFragment extends Fragment
         {
             if(resultCode == RESULT_OK) rcpt.setMediaURI(intent.getData().toString());
             else Toast.makeText(getContext(), "Failed to get media from file picker, " + resultCode, Toast.LENGTH_SHORT).show();
-            //todo copy file to local, because foreign provider provides only temporary file
+            //todo copy file to local, foreign provider provides only temporary file
 
             loadMedia();
         }
@@ -317,13 +376,13 @@ public class RecipeFragment extends Fragment
         mediaDialog.setPositiveButton(getString(R.string.newMedia), (dialogInterface, i) ->
         {
             MaterialAlertDialogBuilder sourceDialog = new MaterialAlertDialogBuilder(requireContext());
-            sourceDialog.setItems(new CharSequence[] {getString(R.string.takePhoto), /*getString(R.string.recordVideo),*/ getString(R.string.select_gallery)}, (dialogInterface2, j) ->
+            sourceDialog.setItems(new CharSequence[] {getString(R.string.takePhoto), getString(R.string.recordVideo), getString(R.string.select_gallery)}, (dialogInterface2, j) ->
             {
                 switch(j)
                 {
                     case 0: captureMedia(CAPTURE_PHOTO); break;
-                    //case 1: captureMedia(CAPTURE_VIDEO); break;
-                    case 1: openFilePicker(); break;
+                    case 1: captureMedia(CAPTURE_VIDEO); break;
+                    case 2: openFilePicker(); break;
                 }
             });
             sourceDialog.show();
@@ -335,8 +394,11 @@ public class RecipeFragment extends Fragment
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             startActivity(intent);
         });
-
-        mediaDialog.setNeutralButton(getString(R.string.save), (dialog2, which) -> rcpt.setMediaURI(input.getText().toString()));
+        mediaDialog.setNeutralButton(getString(R.string.save), (dialog2, which) ->
+        {
+            rcpt.setMediaURI(input.getText().toString());
+            loadMedia();
+        });
         mediaDialog.show();
     }
 
@@ -351,48 +413,6 @@ public class RecipeFragment extends Fragment
         converterFragment.show(requireActivity().getSupportFragmentManager(),null);
     }
 
-    private void onEditMode()
-    {
-        editMode = !editMode;
-        if(editMode)
-        {
-            menu_editIcon.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_save));
-            menu_mediaIcon.setVisible(true);
-
-            text_recipeName.setVisibility(View.INVISIBLE);
-            edit_recipeName.setVisibility(View.VISIBLE);
-            rating_recipeRating.setIsIndicator(false);
-            text_recipeText.setVisibility(View.GONE);
-            edit_recipeText.setVisibility(View.VISIBLE);
-
-            list_ingredients.setEnabled(true);
-            list_ingredients.addFooterView(footerView_ingredients);
-        }
-        else //dokonceny edit
-        {
-            menu_editIcon.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_edit));
-            menu_mediaIcon.setVisible(false);
-
-            text_recipeName.setVisibility(View.VISIBLE);
-            edit_recipeName.setVisibility(View.INVISIBLE);
-            rating_recipeRating.setIsIndicator(true);
-            text_recipeText.setVisibility(View.VISIBLE);
-            edit_recipeText.setVisibility(View.GONE);
-
-            rcpt.setRecipeName(edit_recipeName.getText().toString());
-            rcpt.setRecipeRating(rating_recipeRating.getRating());
-            rcpt.setRecipeText(edit_recipeText.getText().toString());
-
-            text_recipeName.setText(edit_recipeName.getText().toString());
-            text_recipeText.setText(edit_recipeText.getText().toString());
-
-            list_ingredients.setEnabled(false);
-            list_ingredients.removeFooterView(footerView_ingredients);
-
-            db.DAO().updateRecipe(rcpt);
-        }
-    }
-
     private void onRecipeShare()
     {
         StringBuilder content = new StringBuilder();
@@ -400,6 +420,7 @@ public class RecipeFragment extends Fragment
 
         // name
         content.append(rcpt.getRecipeName()).append(newline);
+
         // stars
         for(int i=0; i<Math.floor(rcpt.getRecipeRating()); i++)
             content.append('★');
@@ -408,17 +429,21 @@ public class RecipeFragment extends Fragment
         for(int i=5; i>Math.ceil(rcpt.getRecipeRating()); i--)
             content.append('☆');
         content.append(newline).append(newline);
+
         // ingredients
         content.append("✓ ").append(getResources().getString(R.string.ingredients)).append(newline);
         for(String ingr : rcpt.getIngredients())
             content.append("• ").append(ingr).append(newline);
         content.append(newline);
+
         // procedure
         content.append("✓ ").append(getResources().getString(R.string.procedure)).append(newline);
         content.append(rcpt.getRecipeText()).append(newline).append(newline);
-        // video
-        if(!rcpt.getMediaURI().isEmpty())
+
+        // link
+        if(!rcpt.getMediaURI().isEmpty() && !rcpt.getMediaURI().startsWith("content"))
             content.append("✓ ").append(getResources().getString(R.string.link)).append(newline).append(rcpt.getMediaURI()).append(newline);
+
         // footer
         content.append(newline).append("(Shared from Reciper app \u2764)");
 

@@ -56,6 +56,7 @@ public class AppActivity extends Application
     public void onCreate()
     {
         super.onCreate();
+        Log.i("daco","appactivity oncreate");
 
         db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "Reciper_db")
                 .allowMainThreadQueries()

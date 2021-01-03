@@ -15,11 +15,11 @@ import com.martin.reciper.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IngredientAdapter extends ArrayAdapter<String>
+public class IngredientsAdapter extends ArrayAdapter<String>
 {
     private ArrayList<String> array;
 
-    public IngredientAdapter(Context context, ArrayList<String> array)
+    public IngredientsAdapter(Context context, ArrayList<String> array)
     {
         super(context, -1, array);
         this.array = array;
@@ -31,8 +31,8 @@ public class IngredientAdapter extends ArrayAdapter<String>
         View view = convertView;
         if(view == null)
         {
-            LayoutInflater vi = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = vi.inflate(R.layout.row_ingredient, null);
+            LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            view = inflater.inflate(R.layout.row_ingredient, null); //todo co namiesto null?
         }
 
         String object = array.get(position);
@@ -40,7 +40,6 @@ public class IngredientAdapter extends ArrayAdapter<String>
         {
             TextView text_ingredient = view.findViewById(R.id.text_ingredient);
             if(text_ingredient != null) text_ingredient.setText("\u2022  " + object);
-
         }
         return view;
     }

@@ -21,7 +21,6 @@
     <string name="ounces">Unce</string>
     <string name="foodname">Názov receptu</string>
     <string name="procedure">Postup:</string>
-    <string name="toto_je_prompt" />
     <string name="converter">Prevodník jednotiek</string>
     <string name="title_version">Verzia</string>
     <string name="app_about">Pericipite volisime volemente</string>
@@ -52,4 +51,12 @@
     <string name="media_descriptor">Médium k videu</string>
     <string name="video">Video</string>
     <string name="photo">Fotka</string>
+    <string name="close">Zavrieť</string>
+    <string name="recordVideo">Nahrať video</string>
+    <string name="takePhoto">Spraviť fotografiu</string>
+    <string name="open">Otvoriť</string>
+    <string name="backup">Zálohovať teraz</string>
+    <string name="restorenow">Obnoviť teraz</string>
+    <string name="select_gallery">Vybrať z galérie</string>
+    <string name="newMedia">Nové médium</string>
 </resources>

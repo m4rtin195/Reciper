@@ -4,5 +4,10 @@
     <color name="colorPrimaryDark">#50a84a</color>
     <color name="colorAccent">#dc6068</color>
 
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+
+    <!-- todo wtf -->
     <color name="ic_launcher_background">@color/colorPrimary</color>
 </resources>

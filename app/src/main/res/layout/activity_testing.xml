@@ -7,8 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:visibility="visible"
-    tools:context=".ui.settings.SettingsFragment"
-    android:animateLayoutChanges="true">
+    tools:context=".ui.settings.SettingsFragment">
 
     <EditText
         android:id="@+id/defenseEditText"
@@ -47,12 +46,22 @@
         app:layout_constraintTop_toBottomOf="@+id/defenseEditText" />
 
     <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="16dp"
+        android:text="lab2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/defenseButton" />
+
+    <Button
         android:id="@+id/button_tester"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="33dp"
         android:layout_marginTop="17dp"
-        android:text="Button"
+        android:text="testing"
         app:layout_constraintStart_toEndOf="@+id/defenseButton"
         app:layout_constraintTop_toBottomOf="@+id/defenseEditText" />
 
@@ -73,7 +82,7 @@
         android:layout_height="100dp"
         android:layout_margin="40dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/defenseButton" />
+        app:layout_constraintTop_toBottomOf="@id/button2" />
 
 
     <com.martin.reciper.ui.MyProgressBar
@@ -81,7 +90,7 @@
         android:layout_width="139dp"
         android:layout_height="98dp"
         android:layout_marginStart="168dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="100dp"
         android:max="100"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
@@ -94,18 +103,6 @@
         android:visibility="gone">
 
     </FrameLayout>
-
-    <TextureView
-        android:id="@+id/textureView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/textView1"
@@ -135,20 +132,21 @@
         app:layout_constraintStart_toStartOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="256dp"
-        android:layout_height="405dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textView1"
-        app:layout_constraintTop_toBottomOf="@+id/myPrgBar"
-        android:visibility="gone"/>
+    <!-- <androidx.fragment.app.FragmentContainerView
+         android:id="@+id/map"
+         android:name="com.google.android.gms.maps.SupportMapFragment"
+         android:layout_width="256dp"
+         android:layout_height="405dp"
+         android:layout_marginStart="24dp"
+         android:layout_marginTop="32dp"
+         app:layout_constraintBottom_toBottomOf="parent"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintStart_toEndOf="@+id/textView1"
+         app:layout_constraintTop_toBottomOf="@+id/myPrgBar"
+         android:visibility="gone"/>-->
 
-    <androidx.camera.view.CameraView
+   <!--    tak ako to je to sposobovalo ze sa xml nevedelo vykreslit!!!-->
+   <!-- <androidx.camera.view.CameraView
         android:id="@+id/camera"
         android:layout_width="256dp"
         android:layout_height="405dp"
@@ -157,6 +155,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView1"
-        app:layout_constraintTop_toBottomOf="@+id/myPrgBar"/>
+        app:layout_constraintTop_toBottomOf="@+id/myPrgBar"/>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

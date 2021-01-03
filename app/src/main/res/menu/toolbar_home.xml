@@ -12,19 +12,21 @@
 
     <item
         android:id="@+id/menu_home_youtube"
-        android:orderInCategory="100"
         android:icon="@drawable/ic_youtube"
+        android:orderInCategory="50"
         android:title="@string/text_youtube_search"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/menu_home_converter"
+        android:icon="@drawable/ic_converter"
+        android:orderInCategory="100"
         android:title="@string/title_converter"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/menu_home_settings"
         android:title="@string/title_settings"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
 
 </menu>

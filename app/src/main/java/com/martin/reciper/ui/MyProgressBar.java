@@ -16,7 +16,6 @@ public class MyProgressBar extends ProgressBar
     {
         super(context);
     }
-
     public MyProgressBar(Context context, AttributeSet attrs)
     {
         super(context, attrs);

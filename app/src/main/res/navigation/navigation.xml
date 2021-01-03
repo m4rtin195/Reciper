@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@id/navigation_home">
 
     <fragment
         android:id="@+id/navigation_home"
@@ -13,10 +13,10 @@
         <action
             android:id="@+id/action_navigation_home_to_recipe"
             app:destination="@id/navigation_recipe"
-            app:enterAnim="@android:anim/slide_in_left"
-            app:exitAnim="@android:anim/slide_out_right"
-            app:popEnterAnim="@android:anim/slide_in_left"
-            app:popExitAnim="@android:anim/slide_out_right" />
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_navigation_home_to_settings"
             app:destination="@id/navigation_settings" />
@@ -35,16 +35,18 @@
         android:id="@+id/navigation_settings"
         android:name="com.martin.reciper.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
-        tools:layout="@xml/settings" >
+        tools:layout="@xml/preferences_settings" >
         <action
             android:id="@+id/action_navigation_settings_self"
             app:destination="@id/navigation_settings" />
+        <action
+            android:id="@+id/action_navigation_settings_to_navigation_testingActivity"
+            app:destination="@id/navigation_testingActivity" />
     </fragment>
 
     <fragment
         android:id="@+id/navigation_recipe"
         android:name="com.martin.reciper.ui.recipe.RecipeFragment"
-        android:label="@string/title_recipe"
         tools:layout="@layout/fragment_recipe">
 
         <argument
@@ -53,13 +55,15 @@
 
         <action
             android:id="@+id/action_navigation_recipe_to_navigation_home"
-            app:destination="@id/navigation_home"
-            app:enterAnim="@android:anim/slide_in_left"
-            app:exitAnim="@android:anim/slide_out_right"
-            app:popEnterAnim="@android:anim/slide_in_left"
-            app:popExitAnim="@android:anim/slide_out_right" />
+            app:destination="@id/navigation_home" />
         <action
             android:id="@+id/action_navigation_recipe_to_navigation_converter"
             app:destination="@id/navigation_converter" />
     </fragment>
+
+    <activity
+        android:id="@+id/navigation_testingActivity"
+        android:name="com.martin.reciper.TestingActivity"
+        android:label="TestingActivity" />
+
 </navigation>

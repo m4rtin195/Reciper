@@ -256,7 +256,7 @@ public class ConverterFragment extends DialogFragment
 
     protected void clearFields()
     {
-        clearFields(UnitScope.WEIGHT);
+        //clearFields(UnitScope.WEIGHT);
         clearFields(UnitScope.VOLUME);
     }
 

@@ -15,32 +15,11 @@ public class MyView extends View
     public static final int SUCCESS = 1;
     public static final int FAILED = 2;
 
-    int state = NOTEXECUTED;
+    private int state = NOTEXECUTED;
 
-    public MyView(Context context)
-    {
-        super(context);
-    }
-
-    public MyView(Context context, @Nullable AttributeSet attrs)
-    {
-        super(context, attrs);
-    }
-
-    public MyView(Context context, @Nullable AttributeSet attrs, int defStyleAttr)
-    {
-        super(context, attrs, defStyleAttr);
-    }
-
-    public int getState()
-    {
-        return state;
-    }
-
-    public void setState(int state)
-    {
-        this.state = state;
-    }
+    public MyView(Context context) {super(context);}
+    public MyView(Context context, @Nullable AttributeSet attrs) {super(context, attrs);}
+    public MyView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {super(context, attrs, defStyleAttr);}
 
     @Override
     protected void onDraw(Canvas canvas)
@@ -66,11 +45,14 @@ public class MyView extends View
                 paint = new Paint();
                 paint.setColor(Color.RED);
                 paint.setStrokeWidth(20f);
-                canvas.drawLine(0,0,width, height, paint);
+                canvas.drawLine(0,0, width, height, paint);
                 canvas.drawLine(0, height, width, 0, paint);
                 break;
             default:
                 break;
         }
     }
+
+    public int getState() {return state;}
+    public void setState(int state) {this.state = state; invalidate();}
 }
