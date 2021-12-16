@@ -1,4 +1,4 @@
-Project for a Mobile App Development course on my Erasmus mobility.  
+### Project for a Mobile App Development course on my Erasmus mobility.  
 
 Functionalities:
 - filtering in saved recipes
@@ -11,8 +11,11 @@ Functionalities:
 Used:  
 `Fragments` `Room` `RecyclerView` `PreferenceScreen` `ContentResolver` `AsyncTask` `MediaStore`
 
+<br>
 <p float="left">
-  <img src="/screenshots/img1.jpg" width="200" />
-  <img src="/screenshots/img2.jpg" width="200" /> 
-  <img src="/screenshots/img3.jpg" width="200" />
+  <kbd><img src="/screenshots/img1.jpg" border="10" width="200" /></kbd>
+  &nbsp;&nbsp;&nbsp;
+  <kbd><img src="/screenshots/img2.jpg" width="200" /></kbd>
+  &nbsp;&nbsp;&nbsp;
+  <kbd><img src="/screenshots/img3.jpg" width="200" /></kbd>
 </p>
