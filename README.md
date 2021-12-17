@@ -13,11 +13,11 @@ Used:
 
 <br>
 <p float="left">
-  <kbd><img src="/screenshots/img1.jpg" width="190" /></kbd>
+  <kbd><img src="/screenshots/img1.jpg" width="185" /></kbd>
   &nbsp;
-  <kbd><img src="/screenshots/img2.jpg" width="190" /></kbd>
+  <kbd><img src="/screenshots/img2.jpg" width="185" /></kbd>
   &nbsp;
-  <kbd><img src="/screenshots/img3.jpg" width="190" /></kbd>
+  <kbd><img src="/screenshots/img3.jpg" width="185" /></kbd>
   &nbsp;
-  <kbd><img src="/screenshots/video.gif" width="190" /></kbd>
+  <kbd><img src="/screenshots/video.gif" width="185" /></kbd>
 </p>
